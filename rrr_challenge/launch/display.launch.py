@@ -1,67 +1,47 @@
 import os
 from ament_index_python.packages import get_package_share_directory
 from launch import LaunchDescription
-from launch.actions import DeclareLaunchArgument
-from launch.substitutions import LaunchConfiguration
 from launch_ros.actions import Node
+import launch_ros.descriptions
 
 def generate_launch_description():
-    # Path to the URDF
-    pkg_path = get_package_share_directory('rrr_challenge')
-    urdf_path = os.path.join(pkg_path, 'urdf', 'rrr.urdf')  # Updated path
+    # Path to the URDF file
+    urdf_file_path = os.path.join(
+        get_package_share_directory('rrr_challenge'),
+        'urdf',
+        'rrr.urdf')
     
-    # Read the URDF
-    with open(urdf_path, 'r') as file:
+    # Read the URDF file content
+    with open(urdf_file_path, 'r') as file:
         robot_description = file.read()
-
-    # Launch Arguments
-    use_sim_time = LaunchConfiguration('use_sim_time', default='false')
-    use_gui = LaunchConfiguration('use_gui', default='true')
-
-    # Nodes to launch
+    
+    # Start the robot_state_publisher
+    robot_state_publisher = Node(
+        package='robot_state_publisher',
+        executable='robot_state_publisher',
+        name='robot_state_publisher',
+        output='screen',
+        parameters=[{'robot_description': robot_description}]
+    )
+    
+    # Optional: Add a joint_state_publisher_gui
+    joint_state_publisher = Node(
+        package='joint_state_publisher_gui',
+        executable='joint_state_publisher_gui',
+        name='joint_state_publisher_gui',
+        output='screen'
+    )
+    
+    # Optional: Launch RViz
+    rviz2 = Node(
+        package='rviz2',
+        executable='rviz2',
+        name='rviz2',
+        arguments=['-d', os.path.join(get_package_share_directory('rrr_challenge'), 'config', 'default.rviz')]
+    )
+    
     return LaunchDescription([
-        DeclareLaunchArgument(
-            'use_sim_time',
-            default_value='false',
-            description='Use simulation (Gazebo) clock if true'),
-        
-        DeclareLaunchArgument(
-            'use_gui',
-            default_value='true',
-            description='Flag to enable joint_state_publisher_gui'),
-
-        # Publish robot state
-        Node(
-            package='robot_state_publisher',
-            executable='robot_state_publisher',
-            name='robot_state_publisher',
-            output='screen',
-            parameters=[{
-                'robot_description': robot_description,
-                'use_sim_time': use_sim_time,
-            }],
-        ),
-
-        # GUI to control joint positions
-        Node(
-            package='joint_state_publisher_gui',
-            executable='joint_state_publisher_gui',
-            name='joint_state_publisher_gui',
-            output='screen',
-            parameters=[{
-                'use_sim_time': use_sim_time,
-            }],
-        ),
-
-        # RViz for visualization
-        Node(
-            package='rviz2',
-            executable='rviz2',
-            name='rviz2',
-            output='screen',
-            arguments=['-d', os.path.join(pkg_path, 'config', 'urdf_config.rviz')],
-            parameters=[{
-                'use_sim_time': use_sim_time,
-            }],
-        ),
+        robot_state_publisher,
+        joint_state_publisher,
+        rviz2
     ])

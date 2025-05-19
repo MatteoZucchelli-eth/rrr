@@ -32,13 +32,15 @@ install(TARGETS rrr_robot
 install(DIRECTORY include/
   DESTINATION include)
 
-# Install model files to share directory (for runtime access)
-install(DIRECTORY include/rrr_challenge/mujoco_files/
-  DESTINATION share/${PROJECT_NAME}/include/rrr_challenge/mujoco_files/)
-
-# Install URDF files specifically to share directory
+# Install URDF files (e.g., rrr.urdf)
+# This installs files from include/rrr_challenge/urdf/ to share/rrr_challenge/urdf/
 install(DIRECTORY include/rrr_challenge/urdf/
   DESTINATION share/${PROJECT_NAME}/urdf/)
+
+
+install(DIRECTORY include/rrr_challenge/urdf/mesh/
+  DESTINATION share/${PROJECT_NAME}/urdf/mesh/
+)
 
 # Install launch files
 install(DIRECTORY

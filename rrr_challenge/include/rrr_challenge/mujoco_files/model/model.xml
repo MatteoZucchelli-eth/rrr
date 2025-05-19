@@ -8,7 +8,7 @@
   </asset>
 
   <worldbody>
-    <body name="base" pos="0 0 0">
+    <body name="base" pos="0 0 0" euler="-90 0 0">
       <body name="base_joint" pos="0 -0.15 0">
         <geom type="mesh" mesh="base_joint"/>
         <body name="first_arm" pos="0 -0.175 0">
@@ -26,4 +26,15 @@
       </body>
     </body>
   </worldbody>
+  
+
+  <actuator>
+    <position name="pos_joint1" joint="joint1" kp="50" kv="15"/>
+    <position name="pos_joint2" joint="joint2" kp="50" kv="15"/>
+    <position name="pos_joint3" joint="joint3" kp="50" kv="15"/>
+  </actuator>
+  
+  <keyframe>
+    <key name="home" qpos="0 0 0" />
+  </keyframe>
 </mujoco>
