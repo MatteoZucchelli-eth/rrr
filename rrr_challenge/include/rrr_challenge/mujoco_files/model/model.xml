@@ -1,10 +1,10 @@
 <mujoco model="RRR Robot">
   <compiler angle="degree" meshdir="../mesh/"/>
   <asset>
-    <mesh name="base_joint" file="base_joint - Part 1.stl"/>
-    <mesh name="first_arm" file="first_arm - Part 1.stl"/>
-    <mesh name="second_arm" file="second_arm - Part 1.stl"/>
-    <mesh name="third_arm" file="third_arm - Part 1.stl"/>
+    <mesh name="base_joint" file="base_joint.stl"/>
+    <mesh name="first_arm" file="first_arm.stl"/>
+    <mesh name="second_arm" file="second_arm.stl"/>
+    <mesh name="third_arm" file="third_arm.stl"/>
   </asset>
 
   <worldbody>
