@@ -14,6 +14,10 @@ class MyNode(Node):
         self.L = self.get_parameter('link_length_l').get_parameter_value().double_value
         self.get_logger().info(f"Controller using L: {self.L}")
 
+        # Constraints
+        self.center = np.array([self.L, 0.5*self.L])
+        self.ray = self.L / 4.0
+
         self.get_logger().info('Controller has been started.')
         self.num_joints = 3
         self.pos_dim = 2
@@ -49,7 +53,7 @@ class MyNode(Node):
         self.timer = self.create_timer(self.timer_period, self.controller_loop_callback)
         self.get_logger().info('Controller node initialized with subscriber and timer.')
 
-    def evaluate_jacobian_method(self, theta_input):
+    def evaluate_jacobian(self, theta_input):
         J11 = -self.L * np.sin(theta_input[0]) - self.L * np.sin(theta_input[0] + theta_input[1]) - self.L * np.sin(theta_input[0] + theta_input[1] + theta_input[2])
         J12 = -self.L * np.sin(theta_input[0] + theta_input[1]) - self.L * np.sin(theta_input[0] + theta_input[1] + theta_input[2])
         J13 = -self.L * np.sin(theta_input[0] + theta_input[1] + theta_input[2])
@@ -58,6 +62,11 @@ class MyNode(Node):
         J23 = self.L * np.cos(theta_input[0] + theta_input[1] + theta_input[2])
         jacobian = np.array([[J11, J12, J13], [J21, J22, J23]])
         return jacobian
+    
+    def forward_kinematics(self, theta_input):
+        x = self.L * np.cos(theta_input[0]) + self.L * np.cos(theta_input[0] + theta_input[1]) + self.L * np.cos(theta_input[0] + theta_input[1] + theta_input[2])
+        y = self.L * np.sin(theta_input[0]) + self.L * np.sin(theta_input[0] + theta_input[1]) + self.L * np.sin(theta_input[0] + theta_input[1] + theta_input[2])
+        return np.array([x, y])
 
     def desired_pose_callback(self, msg: JointState):
         self.x_dot_desired = self.kp * (np.array(msg.position) - self.current_end_effector_position)
@@ -83,8 +92,9 @@ class MyNode(Node):
             self.get_logger().warn("Current theta is empty, skipping control loop iteration.")
             return
 
-        J = self.evaluate_jacobian_method(theta_current)
-        
+        J = self.evaluate_jacobian(theta_current)
+        p = self.forward_kinematics(theta_current)
+
         try:
             if J.shape[0] != len(self.x_dot_desired):
                 self.get_logger().error(f"Jacobian rows ({J.shape[0]}) do not match x_dot_desired dimension ({len(self.x_dot_desired)})")
@@ -92,8 +102,9 @@ class MyNode(Node):
 
             def objective(theta_dot):
                 return np.linalg.norm(J @ theta_dot - self.x_dot_desired)**2
-            
-            linar_constraint = LinearConstraint(self.A, -np.inf, self.b)
+            constraints_matrix = 2 * (p - self.center) @ J # shape (1, 3)
+            rho = self.ray ** 2 - np.linalg.norm(p - self.center) ** 2
+            linar_constraint = LinearConstraint(constraints_matrix, rho, np.inf)
             theta_dot_0 = np.zeros(self.num_joints)
 
             result = minimize(objective, theta_dot_0, method='trust-constr', constraints=[linar_constraint])
