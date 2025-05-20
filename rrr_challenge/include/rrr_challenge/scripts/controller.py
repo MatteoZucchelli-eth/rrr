@@ -17,6 +17,8 @@ class MyNode(Node):
         # Constraints
         self.center = np.array([self.L, 0.5*self.L])
         self.ray = self.L / 4.0
+        self.activate_joint_limit = True
+        
 
         self.get_logger().info('Controller has been started.')
         self.num_joints = 3
@@ -95,27 +97,70 @@ class MyNode(Node):
         J = self.evaluate_jacobian(theta_current)
         p = self.forward_kinematics(theta_current)
 
+        # Initialize theta_dot before try block
+        theta_dot = np.zeros(self.num_joints)
+
         try:
             if J.shape[0] != len(self.x_dot_desired):
                 self.get_logger().error(f"Jacobian rows ({J.shape[0]}) do not match x_dot_desired dimension ({len(self.x_dot_desired)})")
                 return
 
-            def objective(theta_dot):
-                return np.linalg.norm(J @ theta_dot - self.x_dot_desired)**2
-            constraints_matrix = 2 * (p - self.center) @ J # shape (1, 3)
-            rho = self.ray ** 2 - np.linalg.norm(p - self.center) ** 2
-            linar_constraint = LinearConstraint(constraints_matrix, rho, np.inf)
-            theta_dot_0 = np.zeros(self.num_joints)
-
-            result = minimize(objective, theta_dot_0, method='trust-constr', constraints=[linar_constraint])
+            # Try a simpler approach first - use pseudoinverse with no constraints
+            # This will work if the constraint isn't active
+            J_pinv = np.linalg.pinv(J)
+            theta_dot_unconstrained = J_pinv @ self.x_dot_desired
             
-            if result.success:
-                theta_dot = result.x
+            # Check if the unconstrained solution satisfies our constraint
+            p_next = p + J @ theta_dot_unconstrained * self.timer_period
+            distance_to_center = np.linalg.norm(p_next - self.center)
+            
+            if distance_to_center >= self.ray:
+                # No constraint violation, use the simple solution
+                theta_dot = theta_dot_unconstrained
             else:
-                self.get_logger().error(f"Optimization failed: {result.message}")
-                return
+                # Constraint would be violated, try the optimization approach
+                self.get_logger().info("Using constrained optimization")
+                
+                def objective(theta_dot_var):
+                    return np.linalg.norm(J @ theta_dot_var - self.x_dot_desired)**2
+                
+                def constraint_func(theta_dot_var):
+                    # Return distance from constraint boundary
+                    # Positive means constraint is satisfied
+                    p_next = p + J @ theta_dot_var * self.timer_period
+                    return np.linalg.norm(p_next - self.center) - self.ray
+                
+                # Use SLSQP which is more robust for this type of problem
+                constraint = {'type': 'ineq', 'fun': constraint_func}
+                
+                result = minimize(
+                    objective, 
+                    theta_dot_unconstrained,  # Start from unconstrained solution
+                    method='SLSQP',  # More robust method
+                    constraints=[constraint],
+                    options={'disp': False, 'ftol': 1e-6}
+                )
+                
+                if result.success:
+                    theta_dot = result.x
+                else:
+                    self.get_logger().error(f"Optimization failed: {result.message}")
+                    # Fall back to unconstrained solution
+                    theta_dot = theta_dot_unconstrained
+                    
         except ValueError as e:
             self.get_logger().error(f"ValueError during optimization: {e}")
+            # Try fallback to pseudoinverse solution without constraints
+            try:
+                J_pinv = np.linalg.pinv(J)
+                theta_dot = J_pinv @ self.x_dot_desired
+                self.get_logger().warn("Falling back to unconstrained pseudoinverse solution")
+            except Exception as e2:
+                self.get_logger().error(f"Fallback also failed: {e2}")
+                return
+        except Exception as e:
+            self.get_logger().error(f"Unexpected error: {e}")
+            return
 
         new_theta_command_raw = theta_current + theta_dot * self.timer_period
 
