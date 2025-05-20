@@ -15,6 +15,13 @@
     <color rgba="0.5 0.5 0.5 1.0"/>
   </material>
 
+  <link name="world"/>
+
+  <joint name="world_to_base" type="fixed">
+    <parent link="world"/>
+    <child link="base_joint_link"/>
+    <origin xyz="0 0 0" rpy="0 1.5708 3.141592"/>
+  </joint>
   <!-- Base Joint Link (Now the Root Link) -->
   <!-- This link is implicitly fixed to the world origin -->
   <link name="base_joint_link">
