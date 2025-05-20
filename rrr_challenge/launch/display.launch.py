@@ -23,13 +23,13 @@ def generate_launch_description():
         parameters=[{'robot_description': robot_description}]
     )
     
-    # # Add a joint_state_publisher_gui
-    # joint_state_publisher = Node(
-    #     package='joint_state_publisher_gui',
-    #     executable='joint_state_publisher_gui',
-    #     name='joint_state_publisher_gui',
-    #     output='screen'
-    # )
+    # Add a joint_state_publisher_gui
+    joint_state_publisher = Node(
+        package='joint_state_publisher_gui',
+        executable='joint_state_publisher_gui',
+        name='joint_state_publisher_gui',
+        output='screen'
+    )
     
     # Optional: Launch RViz
     rviz2 = Node(

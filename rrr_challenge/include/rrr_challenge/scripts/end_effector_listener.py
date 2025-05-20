@@ -12,7 +12,7 @@ class EndEffectorListener(Node):
         super().__init__('end_effector_listener')
         self.tf_buffer = Buffer()
         self.tf_listener = TransformListener(self.tf_buffer, self)
-        self.timer = self.create_timer(0.001, self.timer_callback)
+        self.timer = self.create_timer(0.1, self.timer_callback)
         self.publisher_ = self.create_publisher(JointState, '/end_effector_states', 10)
         self.get_logger().info('End Effector Listener has been started.')
 
@@ -23,7 +23,7 @@ class EndEffectorListener(Node):
                 'base_joint_link',  # Target frame (frame to transform INTO)
                 'end_effector_tip', # Source frame (frame to transform FROM)
                 Time(),             # Get the latest available transform
-                timeout=rclpy.duration.Duration(seconds=0.5) # Reduced timeout slightly
+                timeout=rclpy.duration.Duration(seconds=2.0) # Reduced timeout slightly
             )
            
             ee_state_msg = JointState()
