@@ -49,4 +49,12 @@ install(DIRECTORY
   DESTINATION share/${PROJECT_NAME}/
 )
 
+# Install Python scripts
+install(PROGRAMS
+  include/rrr_challenge/scripts/controller.py
+  include/rrr_challenge/scripts/end_effector_listener.py
+  include/rrr_challenge/scripts/master_node.py
+  DESTINATION lib/${PROJECT_NAME}
+)
+
 ament_package()
