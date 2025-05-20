@@ -3,7 +3,9 @@ import rclpy
 from rclpy.node import Node
 from sensor_msgs.msg import JointState
 import numpy as np
-
+from scipy.optimize import minimize, LinearConstraint
+from scipy import sparse
+import numpy as np
 class MyNode(Node):
     def __init__(self):
         super().__init__('Controller')
@@ -82,30 +84,28 @@ class MyNode(Node):
             return
 
         J = self.evaluate_jacobian_method(theta_current)
-
-        if J.size == 0 or J.shape[0] == 0 or J.shape[1] == 0:
-            self.get_logger().error("Jacobian is empty or ill-defined, skipping control loop iteration.")
-            return
         
         try:
             if J.shape[0] != len(self.x_dot_desired):
                 self.get_logger().error(f"Jacobian rows ({J.shape[0]}) do not match x_dot_desired dimension ({len(self.x_dot_desired)})")
                 return
 
-            J_inv = np.linalg.pinv(J)
+            def objective(theta_dot):
+                return np.linalg.norm(J @ theta_dot - self.x_dot_desired)**2
             
-            if J_inv.shape[1] != len(self.x_dot_desired): 
-                 self.get_logger().error(f"Pinv(J) columns ({J_inv.shape[1]}) do not match x_dot_desired dimension ({len(self.x_dot_desired)}) for multiplication.")
-                 return
+            linar_constraint = LinearConstraint(self.A, -np.inf, self.b)
+            theta_dot_0 = np.zeros(self.num_joints)
 
-            theta_dot = J_inv @ self.x_dot_desired
-        except np.linalg.LinAlgError as e:
-            self.get_logger().error(f"Failed to compute pseudo-inverse or matrix multiplication: {e}")
-            return
-        except Exception as e:
-            self.get_logger().error(f"An unexpected error occurred during kinematic calculations: {e}")
-            return
-        
+            result = minimize(objective, theta_dot_0, method='trust-constr', constraints=[linar_constraint])
+            
+            if result.success:
+                theta_dot = result.x
+            else:
+                self.get_logger().error(f"Optimization failed: {result.message}")
+                return
+        except ValueError as e:
+            self.get_logger().error(f"ValueError during optimization: {e}")
+
         new_theta_command_raw = theta_current + theta_dot * self.timer_period
 
         new_theta_command_normalized = np.arctan2(np.sin(new_theta_command_raw), np.cos(new_theta_command_raw))
