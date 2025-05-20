@@ -15,7 +15,7 @@ class MyNode(Node):
         self.get_logger().info('Controller has been started.')
         self.num_joints = 3
         self.pos_dim = 2
-        self.timer_period = 0.001
+        self.timer_period = 0.02
         self.current_theta = np.zeros(self.num_joints) 
         self.current_end_effector_position = np.zeros(self.pos_dim) 
         self.joint_names_ordered = ['joint1', 'joint2', 'joint3'] 

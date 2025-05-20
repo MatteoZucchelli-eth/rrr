@@ -21,7 +21,7 @@ class MasterNode(Node):
 
         self.publisher_ = self.create_publisher(JointState, '/desired_pose', 10)
         self.task_space_names = ['x_target', 'y_target'] 
-        self.timer_period = 0.02  # seconds
+        self.timer_period = 0.2  # seconds
         self.timer = self.create_timer(self.timer_period, self.timer_callback)
 
     def timer_callback(self):
