@@ -19,7 +19,11 @@ class MyNode(Node):
         self.ray = self.L / 4.0
         self.activate_joint_limit = True
         
-
+        # Define joint limits (in radians)
+        self.joint_min_limits = np.array([-np.pi, -np.pi/2, -np.pi/2])  # Minimum angle for each joint
+        self.joint_max_limits = np.array([np.pi, np.pi/2, np.pi/2])    # Maximum angle for each joint
+        self.joint_limit_margin = 0.1  # Small margin to avoid getting exactly at the limits
+        
         self.get_logger().info('Controller has been started.')
         self.num_joints = 3
         self.pos_dim = 2
@@ -27,11 +31,6 @@ class MyNode(Node):
         self.current_theta = np.zeros(self.num_joints) 
         self.current_end_effector_position = np.zeros(self.pos_dim) 
         self.joint_names_ordered = ['joint1', 'joint2', 'joint3'] 
-        if len(self.joint_names_ordered) != self.num_joints:
-            self.get_logger().error(
-                f"Mismatch between number of joints ({self.num_joints}) and defined joint names ({len(self.joint_names_ordered)}). "
-                "Please update 'self.joint_names_ordered' in controller.py with the correct joint names from your URDF."
-            )
         self.x_dot_desired = np.zeros(self.pos_dim) 
         self.kp = 5
         self.publisher_ = self.create_publisher(JointState, 'joint_states', 10)
@@ -97,7 +96,6 @@ class MyNode(Node):
         J = self.evaluate_jacobian(theta_current)
         p = self.forward_kinematics(theta_current)
 
-
         theta_dot = np.zeros(self.num_joints)
 
         try:
@@ -111,44 +109,102 @@ class MyNode(Node):
             p_next = p + J @ theta_dot_unconstrained * self.timer_period
             distance_to_center = np.linalg.norm(p_next - self.center)
             
-            if distance_to_center >= self.ray:
+            # Check for any constraint violations
+            theta_next_unconstrained = theta_current + theta_dot_unconstrained * self.timer_period
+            joint_limits_violated = np.any(theta_next_unconstrained < self.joint_min_limits + self.joint_limit_margin) or \
+                                   np.any(theta_next_unconstrained > self.joint_max_limits - self.joint_limit_margin)
+            
+            if distance_to_center >= self.ray and not joint_limits_violated:
                 # No constraint violation, use the simple solution
                 theta_dot = theta_dot_unconstrained
             else:
-                # Constraint would be violated, try the optimization approach
-                self.get_logger().info("Using constrained optimization")
+                # At least one constraint would be violated, use optimization
+                violated_type = []
+                if distance_to_center < self.ray:
+                    violated_type.append("circle")
+                if joint_limits_violated:
+                    violated_type.append("joint limits")
+                    
+                self.get_logger().info(f"Using constrained optimization for: {', '.join(violated_type)}")
                 
                 def objective(theta_dot_var):
                     return np.linalg.norm(J @ theta_dot_var - self.x_dot_desired)**2
                 
-                def constraint_func(theta_dot_var):
+                # Circle constraint
+                def circle_constraint(theta_dot_var):
                     p_next = p + J @ theta_dot_var * self.timer_period
                     return np.linalg.norm(p_next - self.center) - self.ray
                 
-              
-                constraint = {'type': 'ineq', 'fun': constraint_func}
+                # Joint limit constraints (one constraint per joint)
+                def min_joint_constraints(theta_dot_var):
+                    theta_next = theta_current + theta_dot_var * self.timer_period
+                    # Return positive values when constraints are satisfied
+                    return theta_next - (self.joint_min_limits + self.joint_limit_margin)
+                
+                def max_joint_constraints(theta_dot_var):
+                    theta_next = theta_current + theta_dot_var * self.timer_period
+                    # Return positive values when constraints are satisfied
+                    return (self.joint_max_limits - self.joint_limit_margin) - theta_next
+                
+                # Create all constraints
+                constraints = []
+                constraints.append({'type': 'ineq', 'fun': circle_constraint})
+                
+                # Add joint limit constraints as separate constraints for better handling
+                for i in range(self.num_joints):
+                    constraints.append({
+                        'type': 'ineq', 
+                        'fun': lambda x, idx=i: min_joint_constraints(x)[idx]
+                    })
+                    constraints.append({
+                        'type': 'ineq', 
+                        'fun': lambda x, idx=i: max_joint_constraints(x)[idx]
+                    })
                 
                 result = minimize(
                     objective, 
                     theta_dot_unconstrained,  # Start from unconstrained solution
                     method='SLSQP', 
-                    constraints=[constraint],
+                    constraints=constraints,
                     options={'disp': False, 'ftol': 1e-6}
                 )
                 
                 if result.success:
                     theta_dot = result.x
+                    self.get_logger().debug(f"Optimization succeeded with solution: {theta_dot}")
                 else:
                     self.get_logger().error(f"Optimization failed: {result.message}")
-                    # Fall back to unconstrained solution
+                    # Fall back to clamping the unconstrained solution
                     theta_dot = theta_dot_unconstrained
+                    theta_next = theta_current + theta_dot * self.timer_period
+                    # Clamp to joint limits to enforce constraints even with failed optimization
+                    theta_next = np.clip(
+                        theta_next, 
+                        self.joint_min_limits + self.joint_limit_margin, 
+                        self.joint_max_limits - self.joint_limit_margin
+                    )
+                    # Recalculate theta_dot from clamped theta_next
+                    theta_dot = (theta_next - theta_current) / self.timer_period
+                    self.get_logger().warn("Falling back to clamped solution")
                     
         except ValueError as e:
             self.get_logger().error(f"ValueError during optimization: {e}")
             try:
+                # Fallback to pseudoinverse and clamp
                 J_pinv = np.linalg.pinv(J)
                 theta_dot = J_pinv @ self.x_dot_desired
-                self.get_logger().warn("Falling back to unconstrained pseudoinverse solution")
+                
+                # Clamp to ensure joint limits aren't violated
+                theta_next = theta_current + theta_dot * self.timer_period
+                theta_next = np.clip(
+                    theta_next, 
+                    self.joint_min_limits + self.joint_limit_margin, 
+                    self.joint_max_limits - self.joint_limit_margin
+                )
+                # Recalculate theta_dot from clamped theta_next
+                theta_dot = (theta_next - theta_current) / self.timer_period
+                
+                self.get_logger().warn("Falling back to clamped pseudoinverse solution")
             except Exception as e2:
                 self.get_logger().error(f"Fallback also failed: {e2}")
                 return
