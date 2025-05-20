@@ -8,20 +8,21 @@ import time
 class MasterNode(Node):
     def __init__(self):
         super().__init__('master_node')
-        # Publishing to /desired_pose, which the controller expects for task-space targets
+
+        # Declare parameters with default values
+        self.declare_parameter('link_length_l', 1.0)
+        self.declare_parameter('frequency_f', 0.5)
+
+        # Get the parameter values
+        self.L = self.get_parameter('link_length_l').get_parameter_value().double_value
+        self.f = self.get_parameter('frequency_f').get_parameter_value().double_value
+        
+        self.get_logger().info(f"Master node using L: {self.L}, f: {self.f}")
+
         self.publisher_ = self.create_publisher(JointState, '/desired_pose', 10)
-        
-        # For a 2D task-space target, the names could represent the axes
         self.task_space_names = ['x_target', 'y_target'] 
-        
-        # Timer to publish the message periodically (or just once if preferred)
-        # and remove the timer. For now, it will keep publishing the same target.
         self.timer_period = 0.02  # seconds
         self.timer = self.create_timer(self.timer_period, self.timer_callback)
-        
-        #self.get_logger().info(f'Master node has been started and will publish desired end-effector pose: {self.target_position.tolist()}')
-
-
 
     def timer_callback(self):
         self.publish_target()
@@ -30,20 +31,19 @@ class MasterNode(Node):
         msg = JointState()
         msg.header.stamp = self.get_clock().now().to_msg()
         
-        # get_time
         t = self.get_clock().now()
 
-        x = 
-        y = 
+        # Use self.L and self.f which are read from parameters
+        x = 2 * self.L 
+        y = self.L * np.sin(t.nanoseconds / 1e9 * 2 * np.pi * self.f) # Corrected t.nanosec to t.nanoseconds
 
-        self.target_position = np.array([x, y]) 
+        target_position = np.array([x, y]) 
 
-        # Populate message for a 2D task-space target
         msg.name = self.task_space_names 
-        msg.position = self.target_position.tolist()
+        msg.position = target_position.tolist()
         
         self.publisher_.publish(msg)
-        self.get_logger().info(f'Publishing desired end-effector pose: {msg.position}')
+        #self.get_logger().info(f'Publishing desired end-effector pose: {msg.position}')
 
 def main(args=None):
     rclpy.init(args=args)

@@ -13,7 +13,7 @@ def generate_launch_description():
     # Read the URDF file content
     with open(urdf_file_path, 'r') as file:
         robot_description = file.read()
-    
+
     # Start the robot_state_publisher
     robot_state_publisher = Node(
         package='robot_state_publisher',
@@ -44,7 +44,10 @@ def generate_launch_description():
         package='rrr_challenge',
         executable='controller.py', # This should match the script name
         name='controller_node',
-        output='screen'
+        output='screen',
+        parameters=[
+            {'link_length_l': 1.0}  # Set the L parameter for the controller
+        ]
     )
 
     # Add end_effector_listener node
@@ -60,7 +63,11 @@ def generate_launch_description():
         package='rrr_challenge',
         executable='master_node.py', # Ensure this matches your script name
         name='master_node',
-        output='screen'
+        output='screen',
+        parameters=[
+            {'link_length_l': 1.0},  # Set L for the master node
+            {'frequency_f': 0.5}     # Set f for the master node
+        ]
     )
     
     return LaunchDescription([

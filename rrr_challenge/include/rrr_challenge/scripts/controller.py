@@ -4,35 +4,28 @@ from rclpy.node import Node
 from sensor_msgs.msg import JointState
 import numpy as np
 
-L = 1.0  # Length of the arm
-
-def evaluate_jacobian(theta_input):
-    J11 = -L * np.sin(theta_input[0]) - L * np.sin(theta_input[0] + theta_input[1]) - L * np.sin(theta_input[0] + theta_input[1] + theta_input[2])
-    J12 = -L * np.sin(theta_input[0] + theta_input[1]) - L * np.sin(theta_input[0] + theta_input[1] + theta_input[2])
-    J13 = -L * np.sin(theta_input[0] + theta_input[1] + theta_input[2])
-    J21 = L * np.cos(theta_input[0]) + L * np.cos(theta_input[0] + theta_input[1]) + L * np.cos(theta_input[0] + theta_input[1] + theta_input[2])
-    J22 = L * np.cos(theta_input[0] + theta_input[1]) + L * np.cos(theta_input[0] + theta_input[1] + theta_input[2])
-    J23 = L * np.cos(theta_input[0] + theta_input[1] + theta_input[2])
-    jacobian = np.array([[J11, J12, J13], [J21, J22, J23]])
-    return jacobian
-
 class MyNode(Node):
     def __init__(self):
         super().__init__('Controller')
+
+        self.declare_parameter('link_length_l', 1.0) 
+        self.L = self.get_parameter('link_length_l').get_parameter_value().double_value
+        self.get_logger().info(f"Controller using L: {self.L}")
+
         self.get_logger().info('Controller has been started.')
         self.num_joints = 3
         self.pos_dim = 2
         self.timer_period = 0.001
-        self.current_theta = np.zeros(self.num_joints) # .T is not necessary for 1D array
-        self.current_end_effector_position = np.zeros(self.pos_dim) # .T is not necessary for 1D array
+        self.current_theta = np.zeros(self.num_joints) 
+        self.current_end_effector_position = np.zeros(self.pos_dim) 
         self.joint_names_ordered = ['joint1', 'joint2', 'joint3'] 
         if len(self.joint_names_ordered) != self.num_joints:
             self.get_logger().error(
                 f"Mismatch between number of joints ({self.num_joints}) and defined joint names ({len(self.joint_names_ordered)}). "
                 "Please update 'self.joint_names_ordered' in controller.py with the correct joint names from your URDF."
             )
-        self.x_dot_desired = np.zeros(self.pos_dim) # .T is not necessary for 1D array
-        self.kp = 0.001 # Proportional gain, adjust as needed
+        self.x_dot_desired = np.zeros(self.pos_dim) 
+        self.kp = 1.0
         self.publisher_ = self.create_publisher(JointState, 'joint_states', 10)
         self.desired_pose_subscription = self.create_subscription(
             JointState,
@@ -51,62 +44,56 @@ class MyNode(Node):
             self.end_effector_states_callback,
             10)
         
-
-        
         self.timer = self.create_timer(self.timer_period, self.controller_loop_callback)
         self.get_logger().info('Controller node initialized with subscriber and timer.')
 
+    def evaluate_jacobian_method(self, theta_input):
+        J11 = -self.L * np.sin(theta_input[0]) - self.L * np.sin(theta_input[0] + theta_input[1]) - self.L * np.sin(theta_input[0] + theta_input[1] + theta_input[2])
+        J12 = -self.L * np.sin(theta_input[0] + theta_input[1]) - self.L * np.sin(theta_input[0] + theta_input[1] + theta_input[2])
+        J13 = -self.L * np.sin(theta_input[0] + theta_input[1] + theta_input[2])
+        J21 = self.L * np.cos(theta_input[0]) + self.L * np.cos(theta_input[0] + theta_input[1]) + self.L * np.cos(theta_input[0] + theta_input[1] + theta_input[2])
+        J22 = self.L * np.cos(theta_input[0] + theta_input[1]) + self.L * np.cos(theta_input[0] + theta_input[1] + theta_input[2])
+        J23 = self.L * np.cos(theta_input[0] + theta_input[1] + theta_input[2])
+        jacobian = np.array([[J11, J12, J13], [J21, J22, J23]])
+        return jacobian
+
     def desired_pose_callback(self, msg: JointState):
-        self.x_dot_desired = self.kp * (np.array(msg.position).T - self.current_end_effector_position)
+        self.x_dot_desired = self.kp * (np.array(msg.position) - self.current_end_effector_position)
 
     def joint_states_listener_callback(self, msg: JointState):
-        """
-        Updates the current joint angles from robot feedback.
-        """
-        # Check if the message contains position data
         if msg.position and len(msg.position) == self.num_joints:
-            # Update the current joint angles
             self.current_theta = np.array(msg.position)
             self.get_logger().debug(f"Updated current_theta: {self.current_theta}")
         else:
             self.get_logger().warn(f"Received joint state with unexpected length: {len(msg.position) if msg.position else 0}")
 
     def end_effector_states_callback(self, msg: JointState):
-        """
-        Updates the current end effector position from the end_effector_listener node.
-        """
-        # Check if the message contains position data
         if msg.position and len(msg.position) == self.pos_dim:
-            # Update the current end effector position
             self.current_end_effector_position = np.array(msg.position)
             self.get_logger().debug(f"Updated end effector position: {self.current_end_effector_position}")
         else:
             self.get_logger().warn(f"Received end effector state with unexpected length: {len(msg.position) if msg.position else 0}")
-
+            
     def controller_loop_callback(self):
         theta_current = self.current_theta 
         
-        # Ensure current_theta is not empty before Jacobian evaluation
         if theta_current.size == 0:
             self.get_logger().warn("Current theta is empty, skipping control loop iteration.")
             return
 
-        J = evaluate_jacobian(theta_current)
+        J = self.evaluate_jacobian_method(theta_current)
 
-        # Ensure Jacobian is not empty or ill-defined
         if J.size == 0 or J.shape[0] == 0 or J.shape[1] == 0:
             self.get_logger().error("Jacobian is empty or ill-defined, skipping control loop iteration.")
             return
         
         try:
-            # Ensure J is compatible with x_dot_desired for matrix multiplication
             if J.shape[0] != len(self.x_dot_desired):
                 self.get_logger().error(f"Jacobian rows ({J.shape[0]}) do not match x_dot_desired dimension ({len(self.x_dot_desired)})")
                 return
 
             J_inv = np.linalg.pinv(J)
             
-            # Ensure J_inv can be multiplied by x_dot_desired
             if J_inv.shape[1] != len(self.x_dot_desired): 
                  self.get_logger().error(f"Pinv(J) columns ({J_inv.shape[1]}) do not match x_dot_desired dimension ({len(self.x_dot_desired)}) for multiplication.")
                  return
@@ -130,13 +117,13 @@ class MyNode(Node):
 
 def main(args=None):
     rclpy.init(args=args)
-    node = MyNode()
+    controller_node = MyNode()
     try:
-        rclpy.spin(node)
+        rclpy.spin(controller_node)
     except KeyboardInterrupt:
-        node.get_logger().info('Keyboard interrupt, shutting down.')
+        pass
     finally:
-        node.destroy_node()
+        controller_node.destroy_node()
         rclpy.shutdown()
 
 if __name__ == '__main__':
