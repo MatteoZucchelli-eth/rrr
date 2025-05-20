@@ -35,8 +35,7 @@ class MasterNode(Node):
 
         # Use self.L and self.f which are read from parameters
         x = 2 * self.L 
-        #y = self.L * np.sin(t.nanoseconds / 1e9 * 2 * np.pi * self.f) # Corrected t.nanosec to t.nanoseconds
-        y = 2 * self.L
+        y = self.L * np.sin(t.nanoseconds / 1e9 * 2 * np.pi * self.f) # Corrected t.nanosec to t.nanoseconds
         target_position = np.array([x, y]) 
 
         msg.name = self.task_space_names 

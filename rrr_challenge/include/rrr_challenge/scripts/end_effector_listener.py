@@ -31,7 +31,7 @@ class EndEffectorListener(Node):
             ee_state_msg.header.stamp = trans.header.stamp 
             ee_state_msg.header.frame_id = trans.header.frame_id 
            
-            ee_state_msg.position = [trans.transform.translation.x, trans.transform.translation.z]
+            ee_state_msg.position = [trans.transform.translation.z, trans.transform.translation.x]
             self.publisher_.publish(ee_state_msg)
 
             # self.get_logger().info(

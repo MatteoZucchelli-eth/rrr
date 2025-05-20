@@ -25,7 +25,7 @@ class MyNode(Node):
                 "Please update 'self.joint_names_ordered' in controller.py with the correct joint names from your URDF."
             )
         self.x_dot_desired = np.zeros(self.pos_dim) 
-        self.kp = 1.0
+        self.kp = 5
         self.publisher_ = self.create_publisher(JointState, 'joint_states', 10)
         self.desired_pose_subscription = self.create_subscription(
             JointState,
@@ -106,12 +106,14 @@ class MyNode(Node):
             self.get_logger().error(f"An unexpected error occurred during kinematic calculations: {e}")
             return
         
-        new_theta_command = theta_current + theta_dot * self.timer_period
+        new_theta_command_raw = theta_current + theta_dot * self.timer_period
+
+        new_theta_command_normalized = np.arctan2(np.sin(new_theta_command_raw), np.cos(new_theta_command_raw))
     
         output_msg = JointState()
         output_msg.header.stamp = self.get_clock().now().to_msg()
         output_msg.name = self.joint_names_ordered
-        output_msg.position = new_theta_command.tolist()
+        output_msg.position = new_theta_command_normalized.tolist()
         
         self.publisher_.publish(output_msg)
 
