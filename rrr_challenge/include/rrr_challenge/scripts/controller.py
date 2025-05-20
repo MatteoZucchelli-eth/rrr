@@ -23,7 +23,7 @@ class MyNode(Node):
         self.get_logger().info('Controller has been started.')
         self.num_joints = 3
         self.pos_dim = 2
-        self.timer_period = 0.001
+        self.timer_period = 0.05
         self.current_theta = np.zeros(self.num_joints) 
         self.current_end_effector_position = np.zeros(self.pos_dim) 
         self.joint_names_ordered = ['joint1', 'joint2', 'joint3'] 
@@ -97,7 +97,7 @@ class MyNode(Node):
         J = self.evaluate_jacobian(theta_current)
         p = self.forward_kinematics(theta_current)
 
-        # Initialize theta_dot before try block
+
         theta_dot = np.zeros(self.num_joints)
 
         try:
@@ -105,12 +105,9 @@ class MyNode(Node):
                 self.get_logger().error(f"Jacobian rows ({J.shape[0]}) do not match x_dot_desired dimension ({len(self.x_dot_desired)})")
                 return
 
-            # Try a simpler approach first - use pseudoinverse with no constraints
-            # This will work if the constraint isn't active
             J_pinv = np.linalg.pinv(J)
             theta_dot_unconstrained = J_pinv @ self.x_dot_desired
             
-            # Check if the unconstrained solution satisfies our constraint
             p_next = p + J @ theta_dot_unconstrained * self.timer_period
             distance_to_center = np.linalg.norm(p_next - self.center)
             
@@ -125,18 +122,16 @@ class MyNode(Node):
                     return np.linalg.norm(J @ theta_dot_var - self.x_dot_desired)**2
                 
                 def constraint_func(theta_dot_var):
-                    # Return distance from constraint boundary
-                    # Positive means constraint is satisfied
                     p_next = p + J @ theta_dot_var * self.timer_period
                     return np.linalg.norm(p_next - self.center) - self.ray
                 
-                # Use SLSQP which is more robust for this type of problem
+              
                 constraint = {'type': 'ineq', 'fun': constraint_func}
                 
                 result = minimize(
                     objective, 
                     theta_dot_unconstrained,  # Start from unconstrained solution
-                    method='SLSQP',  # More robust method
+                    method='SLSQP', 
                     constraints=[constraint],
                     options={'disp': False, 'ftol': 1e-6}
                 )
@@ -150,7 +145,6 @@ class MyNode(Node):
                     
         except ValueError as e:
             self.get_logger().error(f"ValueError during optimization: {e}")
-            # Try fallback to pseudoinverse solution without constraints
             try:
                 J_pinv = np.linalg.pinv(J)
                 theta_dot = J_pinv @ self.x_dot_desired
