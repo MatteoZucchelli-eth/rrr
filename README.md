@@ -30,11 +30,9 @@ To get the code up and running:
 ## 🤖 Robot Modeling
 To model the robot:
 
-The simplified robotic arm was designed using Onshape.
-
-The STL files were exported and used to construct a URDF model.
-
-The robot model is visualized using RViz for simulation and debugging.
+1. The simplified robotic arm was designed using Onshape.
+2. The STL files were exported and used to construct a URDF model.
+3. The robot model is visualized using RViz for simulation and debugging.
 
 ## 🧠 Node Architecture
 The system consists of four ROS 2 nodes, all written in Python:
