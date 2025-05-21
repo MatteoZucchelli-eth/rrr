@@ -51,7 +51,7 @@ class MasterNode(Node):
         current_pose.header.stamp = msg.header.stamp
         current_pose.header.frame_id = "base_joint_link"
         current_pose.pose.position.x = target_position[1]
-        current_pose.pose.position.y = 0.0
+        current_pose.pose.position.y = 0.1
         current_pose.pose.position.z = target_position[0]
         q = Quaternion()
         q.x = 0.0
