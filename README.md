@@ -1,4 +1,4 @@
-# 🦾 3-DOF Planar Robotic Arm Control – ROS 2 Challenge
+# 🦾 3-DOF Planar Robotic Arm Control – Humanoid Challenge
 
 This repository contains a ROS 2-based simulation of a simple 3-DOF planar robotic arm. The main goal is to control the end-effector to track a moving target in real-time.
 
