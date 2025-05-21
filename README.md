@@ -89,7 +89,7 @@ where $J⁺$ is the pseudo-inverse of the Jacobian.
 
 Instead of calculating ẋ directly, it is approximated using a proportional controller:
 
-$$ẋ ≈ Kp · (x_desired - x_current)$$
+$$ẋ ≈ Kp · (x_d - x_c)$$
 
 
 🧪 Dependencies
