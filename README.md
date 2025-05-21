@@ -31,28 +31,38 @@ The STL files were exported and used to construct a URDF model.
 The robot model is visualized using RViz for simulation and debugging.
 
 🧠 Node Architecture
-The system consists of three ROS 2 nodes, all written in Python:
+The system consists of four ROS 2 nodes, all written in Python:
 
-1. Master Node
-Publishes: Target position (/desired_position)
+### 1. **Master Node**
+- **Publishes**: `/desired_position`
+- **Description**: Periodically generates and publishes a target position that the robot's end-effector must follow.
 
-Description: Periodically generates and publishes a target position that the robot's end-effector must follow.
+---
 
-2. End-Effector Node
-Publishes: End-effector position (/current_position)
+### 2. **End-Effector Node**
+- **Publishes**: `/current_position`
+- **Description**: Computes the current Cartesian coordinates of the end-effector from the joint states visualized in RViz and publishes a clean, ready-to-use version.
 
-Description: Computes the current Cartesian coordinates of the end-effector from rviz and publishes a clean, ready-to-use version.
+---
 
-3. Controller Node
-Subscribes:
+### 3. **Simulation Node**
+- **Subscribes**: Joint velocities
+- **Publishes**: Joint states
+- **Description**: Simulates the robot by updating joint angles based on commanded velocities using:
 
-Target position (/desired_position)
+θ_new = θ_old + θ̇ · Δt
 
-Current end-effector position (/current_position)
+sql
+Copy
+Edit
 
-Publishes: Joint states
-
-Description: Controls the robot by computing the necessary joint velocities that will drive the end-effector to follow the desired trajectory.
+where `Δt` is the simulation time step. The updated joint states are published and visualized in RViz.
+### 4. **Controller Node**
+- **Subscribes**:
+  - `/desired_position`
+  - `/current_position`
+- **Publishes**: Joint velocities
+- **Description**: Controls the robot by computing the joint velocities required to make the end-effector follow the target trajectory.
 
 🧩 How It Works:
 The controller reads both the current and desired end-effector positions.
