@@ -18,8 +18,6 @@ class MasterNode(Node):
         # Get the parameter values
         self.L = self.get_parameter('link_length_l').get_parameter_value().double_value
         self.f = self.get_parameter('frequency_f').get_parameter_value().double_value
-        
-        self.get_logger().info(f"Master node using L: {self.L}, f: {self.f}")
 
         self.publisher_ = self.create_publisher(JointState, '/desired_pose', 10)
         self.task_space_names = ['x_target', 'y_target'] 
@@ -31,8 +29,7 @@ class MasterNode(Node):
         self.path_max_poses = 10
 
     def timer_callback(self):
-        self.publish_target()
-        # Request the latest available transform          
+        self.publish_target()       
 
     def publish_target(self):
         msg = JointState()
@@ -40,9 +37,8 @@ class MasterNode(Node):
         
         t = self.get_clock().now()
 
-        # Use self.L and self.f which are read from parameters
         x = 1 * self.L 
-        y = self.L * np.sin(t.nanoseconds / 1e9 * 2 * np.pi * self.f) # Corrected t.nanosec to t.nanoseconds
+        y = self.L * np.sin(t.nanoseconds / 1e9 * 2 * np.pi * self.f) 
         target_position = np.array([x, y]) 
 
         msg.name = self.task_space_names 

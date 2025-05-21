@@ -20,12 +20,11 @@ class EndEffectorListener(Node):
 
     def timer_callback(self):
         try:
-            # Request the latest available transform
             trans: TransformStamped = self.tf_buffer.lookup_transform(
-                'base_joint_link',  # Target frame (frame to transform INTO)
-                'end_effector_tip', # Source frame (frame to transform FROM)
-                Time(),             # Get the latest available transform
-                timeout=rclpy.duration.Duration(seconds=2.0) # Reduced timeout slightly
+                'base_joint_link',  
+                'end_effector_tip', 
+                Time(),             
+                timeout=rclpy.duration.Duration(seconds=2.0)
             )
            
             ee_state_msg = JointState()

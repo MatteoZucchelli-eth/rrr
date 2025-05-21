@@ -194,4 +194,30 @@
     </actuator>
   </transmission>
 
+  <material name="constraint_red">
+    <color rgba="0.8 0.0 0.0 0.3"/>
+  </material>
+
+
+  <link name="constraint_disk">
+    <visual>
+      <origin xyz="0 0 0" rpy="1.5708 0 0"/>
+      <geometry>
+        <cylinder radius="0.25" length="0.01"/>
+      </geometry>
+      <material name="constraint_red"/>
+    </visual>
+    <inertial>
+      <mass value="0.0001"/>
+      <inertia ixx="0.0000001" ixy="0.0" ixz="0.0" iyy="0.0000001" iyz="0.0" izz="0.0000001"/>
+    </inertial>
+  </link>
+
+ 
+  <joint name="constraint_disk_joint" type="fixed">
+    <parent link="base_joint_link"/>
+    <child link="constraint_disk"/>
+    <origin xyz="0.5 0 1" rpy="0 0 0"/>
+  </joint>
+
 </robot>

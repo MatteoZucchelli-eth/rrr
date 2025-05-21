@@ -15,24 +15,25 @@ class MyNode(Node):
         self.get_logger().info(f"Controller using L: {self.L}")
 
         # Constraints
-        self.center = np.array([self.L, 0.5*self.L])
-        self.ray = self.L / 4.0
+        self.center = 1.0*np.array([self.L, 0.5*self.L])
+        self.radius = self.L / 4.0
         self.activate_joint_limit = True
         
         # Define joint limits (in radians)
-        self.joint_min_limits = np.array([-np.pi, -np.pi/2, -np.pi/2])  # Minimum angle for each joint
-        self.joint_max_limits = np.array([np.pi, np.pi/2, np.pi/2])    # Maximum angle for each joint
+        self.joint_min_limits = np.array([-np.pi, -np.pi, -np.pi])  # Minimum angle for each joint
+        self.joint_max_limits = np.array([np.pi, np.pi, np.pi])    # Maximum angle for each joint
         self.joint_limit_margin = 0.1  # Small margin to avoid getting exactly at the limits
         
-        self.get_logger().info('Controller has been started.')
+        #  Define joint max velocity
+        self.max_vel = 3.0 # Maximum joint velocity (radians per second)
         self.num_joints = 3
         self.pos_dim = 2
-        self.timer_period = 0.05
+        self.timer_period = 0.0333 # f = 
         self.current_theta = np.zeros(self.num_joints) 
         self.current_end_effector_position = np.zeros(self.pos_dim) 
         self.joint_names_ordered = ['joint1', 'joint2', 'joint3'] 
         self.x_dot_desired = np.zeros(self.pos_dim) 
-        self.kp = 5
+        self.kp = 6.0
         self.publisher_ = self.create_publisher(JointState, 'joint_states', 10)
         self.desired_pose_subscription = self.create_subscription(
             JointState,
@@ -52,7 +53,7 @@ class MyNode(Node):
             10)
         
         self.timer = self.create_timer(self.timer_period, self.controller_loop_callback)
-        self.get_logger().info('Controller node initialized with subscriber and timer.')
+        self.get_logger().info('Controller node initialized.')
 
     def evaluate_jacobian(self, theta_input):
         J11 = -self.L * np.sin(theta_input[0]) - self.L * np.sin(theta_input[0] + theta_input[1]) - self.L * np.sin(theta_input[0] + theta_input[1] + theta_input[2])
@@ -75,14 +76,12 @@ class MyNode(Node):
     def joint_states_listener_callback(self, msg: JointState):
         if msg.position and len(msg.position) == self.num_joints:
             self.current_theta = np.array(msg.position)
-            self.get_logger().debug(f"Updated current_theta: {self.current_theta}")
         else:
             self.get_logger().warn(f"Received joint state with unexpected length: {len(msg.position) if msg.position else 0}")
 
     def end_effector_states_callback(self, msg: JointState):
         if msg.position and len(msg.position) == self.pos_dim:
             self.current_end_effector_position = np.array(msg.position)
-            self.get_logger().debug(f"Updated end effector position: {self.current_end_effector_position}")
         else:
             self.get_logger().warn(f"Received end effector state with unexpected length: {len(msg.position) if msg.position else 0}")
             
@@ -114,13 +113,13 @@ class MyNode(Node):
             joint_limits_violated = np.any(theta_next_unconstrained < self.joint_min_limits + self.joint_limit_margin) or \
                                    np.any(theta_next_unconstrained > self.joint_max_limits - self.joint_limit_margin)
             
-            if distance_to_center >= self.ray and not joint_limits_violated:
+            if distance_to_center >= self.radius and not joint_limits_violated:
                 # No constraint violation, use the simple solution
                 theta_dot = theta_dot_unconstrained
             else:
                 # At least one constraint would be violated, use optimization
                 violated_type = []
-                if distance_to_center < self.ray:
+                if distance_to_center < self.radius:
                     violated_type.append("circle")
                 if joint_limits_violated:
                     violated_type.append("joint limits")
@@ -133,24 +132,22 @@ class MyNode(Node):
                 # Circle constraint
                 def circle_constraint(theta_dot_var):
                     p_next = p + J @ theta_dot_var * self.timer_period
-                    return np.linalg.norm(p_next - self.center) - self.ray
+                    return np.linalg.norm(p_next - self.center) - self.radius
                 
                 # Joint limit constraints (one constraint per joint)
+                # Return positive values when constraints are satisfied
                 def min_joint_constraints(theta_dot_var):
                     theta_next = theta_current + theta_dot_var * self.timer_period
-                    # Return positive values when constraints are satisfied
                     return theta_next - (self.joint_min_limits + self.joint_limit_margin)
                 
                 def max_joint_constraints(theta_dot_var):
                     theta_next = theta_current + theta_dot_var * self.timer_period
-                    # Return positive values when constraints are satisfied
                     return (self.joint_max_limits - self.joint_limit_margin) - theta_next
                 
                 # Create all constraints
                 constraints = []
                 constraints.append({'type': 'ineq', 'fun': circle_constraint})
                 
-                # Add joint limit constraints as separate constraints for better handling
                 for i in range(self.num_joints):
                     constraints.append({
                         'type': 'ineq', 
@@ -212,6 +209,7 @@ class MyNode(Node):
             self.get_logger().error(f"Unexpected error: {e}")
             return
 
+        theta_dot = np.clip(theta_dot, -1.0*self.max_vel, self.max_vel)
         new_theta_command_raw = theta_current + theta_dot * self.timer_period
 
         new_theta_command_normalized = np.arctan2(np.sin(new_theta_command_raw), np.cos(new_theta_command_raw))
