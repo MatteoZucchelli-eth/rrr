@@ -66,7 +66,7 @@ The updated joint states are published and visualized in RViz.
 - **Subscribes**:
   - `/desired_position`
   - `/current_position`
-- **Publishes**: Joint velocities
+- **Publishes**:  `/joint_states_vel`
 - **Description**: Controls the robot by computing the joint velocities required to make the end-effector follow the target trajectory.
 
 🧩 How It Works:
