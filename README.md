@@ -12,16 +12,16 @@ To get the code up and running:
 2. Make sure you have all dependencies installed (Python, NumPy, ROS 2 Humble).
 3. Build the workspace:
 
-   ```
+   ```bash
    
    colcon build --packages-select rrr_challenge
    source install/setup.bash
    
    ```
    
-Launch the system with:
+4. Launch the system with:
 
-   ```
+   ```bash
 
    ros2 launch rrr_challenge display.launch.py
 
