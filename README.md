@@ -38,20 +38,22 @@ To model the robot:
 The system consists of four ROS 2 nodes, all written in Python:
 
 ### 1. **Master Node**
-- **Publishes**: `/desired_position`
+- **Publishes**:
+   - `/desired_pose`
+   - `/end_effector_path`
 - **Description**: Periodically generates and publishes a target position that the robot's end-effector must follow.
 
 ---
 
 ### 2. **End-Effector Node**
-- **Publishes**: `/current_position`
+- **Publishes**: `/end_effector_states`
 - **Description**: Computes the current Cartesian coordinates of the end-effector from the joint states visualized in RViz and publishes a clean, ready-to-use version.
 
 ---
 
 ### 3. **Simulation Node**
-- **Subscribes**: Joint velocities
-- **Publishes**: Joint states
+- **Subscribes**: `/joint_states_vel`
+- **Publishes**: `/joint_states`
 - **Description**: Simulates the robot by updating joint angles based on commanded velocities using:
 
 
