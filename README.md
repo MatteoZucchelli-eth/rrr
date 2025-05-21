@@ -21,7 +21,7 @@ Launch the system with:
 bash
 Copy code
 ros2 launch rrr_challenge display.launch.py
-🤖 Robot Modeling
+## 🤖 Robot Modeling
 To model the robot:
 
 The simplified robotic arm was designed using Onshape.
@@ -30,7 +30,7 @@ The STL files were exported and used to construct a URDF model.
 
 The robot model is visualized using RViz for simulation and debugging.
 
-🧠 Node Architecture
+## 🧠 Node Architecture
 The system consists of four ROS 2 nodes, all written in Python:
 
 ### 1. **Master Node**
