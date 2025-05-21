@@ -18,9 +18,9 @@ To get the code up and running:
 
 Launch the system with:
 
-bash
-Copy code
-ros2 launch rrr_challenge display.launch.py
+   ```bash
+   Copy code
+   ros2 launch rrr_challenge display.launch.py
 ## 🤖 Robot Modeling
 To model the robot:
 
