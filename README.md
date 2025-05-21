@@ -15,11 +15,12 @@ To get the code up and running:
    ```bash
    colcon build --packages-select rrr_challenge
    source install/setup.bash
-
+   ```
 Launch the system with:
 
-   ```py
+   ```bash
    ros2 launch rrr_challenge display.launch.py
+   ```
 
 ## 🤖 Robot Modeling
 To model the robot:
@@ -50,13 +51,12 @@ The system consists of four ROS 2 nodes, all written in Python:
 - **Publishes**: Joint states
 - **Description**: Simulates the robot by updating joint angles based on commanded velocities using:
 
-θ_new = θ_old + θ̇ · Δt
 
-sql
-Copy
-Edit
+    $θ_{new} = θ_{old} + \dot{θ} \cdot Δt$
 
-where `Δt` is the simulation time step. The updated joint states are published and visualized in RViz.
+    where $θ$ represents joint angles, $\dot{θ}$ represents joint velocities, and $Δt$ is the simulation time step.
+
+The updated joint states are published and visualized in RViz.
 ### 4. **Controller Node**
 - **Subscribes**:
   - `/desired_position`
@@ -70,26 +70,23 @@ The controller reads both the current and desired end-effector positions.
 From robotics kinematics:
 
 Copy code
-ẋ = J(θ) · θ̇
+$ẋ = J(θ) · θ̇_dot$
 where:
 
-ẋ: velocity of the end-effector
+$ẋ$: velocity of the end-effector
 
-J(θ): Jacobian matrix
+$J(θ)$: Jacobian matrix
 
-θ̇: joint velocities
+$θ̇_dot$: joint velocities
 
 To compute the required joint velocities:
 
-Copy code
-θ̇ = J⁺(θ) · ẋ
-where J⁺ is the pseudo-inverse of the Jacobian.
+$θ̇_dot = J⁺(θ) · ẋ$
+where $J⁺$ is the pseudo-inverse of the Jacobian.
 
 Instead of calculating ẋ directly, it is approximated using a proportional controller:
 
-scss
-Copy code
-ẋ ≈ Kp · (x_desired - x_current)
+$ẋ ≈ Kp · (x_desired - x_current)$
 
 
 🧪 Dependencies
