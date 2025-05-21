@@ -11,11 +11,9 @@ class MasterNode(Node):
     def __init__(self):
         super().__init__('master_node')
 
-        # Declare parameters with default values
         self.declare_parameter('link_length_l', 1.0)
         self.declare_parameter('frequency_f', 0.5)
 
-        # Get the parameter values
         self.L = self.get_parameter('link_length_l').get_parameter_value().double_value
         self.f = self.get_parameter('frequency_f').get_parameter_value().double_value
         
@@ -29,8 +27,7 @@ class MasterNode(Node):
         self.path_max_poses = 10
 
     def timer_callback(self):
-        self.publish_target()
-        # Request the latest available transform          
+        self.publish_target()      
 
     def publish_target(self):
         msg = JointState()
@@ -38,7 +35,6 @@ class MasterNode(Node):
         
         t = self.get_clock().now()
 
-        # Use self.L and self.f which are read from parameters
         x = 2 * self.L 
         y = self.L * np.sin(t.nanoseconds / 1e9 * 2 * np.pi * self.f) # Corrected t.nanosec to t.nanoseconds
         target_position = np.array([x, y]) 
