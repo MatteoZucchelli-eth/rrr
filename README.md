@@ -55,9 +55,9 @@ The system consists of four ROS 2 nodes, all written in Python:
 - **Description**: Simulates the robot by updating joint angles based on commanded velocities using:
 
 
-    $$θ_{new} = θ_{old} + \dot{θ} \cdot Δt$$
+    $$\theta_{new} = \theta_{old} +  \dot{\theta} \cdot Δt$$
 
-    where $θ$ represents joint angles, $\dot{θ}$ represents joint velocities, and $Δt$ is the simulation time step.
+    where $\theta$ represents joint angles, $\dot{\theta}$ represents joint velocities, and $Δt$ is the simulation time step.
 
 The updated joint states are published and visualized in RViz.
 ### 4. **Controller Node**
@@ -73,18 +73,18 @@ The controller reads both the current and desired end-effector positions.
 From robotics kinematics:
 
 Copy code
-$$ẋ = J(θ) \cdot \dot{θ}$$
+$$ẋ = J(\theta) \cdot \dot{\theta}$$
 where:
 
 $ẋ$: velocity of the end-effector
 
-$J(θ)$: Jacobian matrix
+$J(\theta)$: Jacobian matrix
 
-$θ̇_dot$: joint velocities
+$\dot{\theta}$: joint velocities
 
 To compute the required joint velocities:
 
-$$θ̇_dot = J⁺(θ) · ẋ$$
+$$\dot{\theta} = J⁺(\theta) · ẋ$$
 where $J⁺$ is the pseudo-inverse of the Jacobian.
 
 Instead of calculating ẋ directly, it is approximated using a proportional controller:
