@@ -69,29 +69,35 @@ The updated joint states are published and visualized in RViz.
 - **Publishes**:  `/joint_states_vel`
 - **Description**: Controls the robot by computing the joint velocities required to make the end-effector follow the target trajectory.
 
-####🧩 How It Works:
+### 🧩 How It Works:
+
 The controller reads both the current and desired end-effector positions.
 
 From robotics kinematics:
 
-Copy code
-$$ẋ = J(\theta) \cdot \dot{\theta}$$
+$$\dot{x} = J(\theta) \cdot \dot{\theta}$$
+
 where:
 
-$ẋ$: velocity of the end-effector
-
-$J(\theta)$: Jacobian matrix
-
-$\dot{\theta}$: joint velocities
+- $\dot{x}$: velocity of the end-effector  
+- $J(\theta)$: Jacobian matrix  
+- $\dot{\theta}$: joint velocities  
 
 To compute the required joint velocities:
 
-$$\dot{\theta} = J⁺(\theta) · ẋ$$
-where $J⁺$ is the pseudo-inverse of the Jacobian.
+$$\dot{\theta} = J^+(\theta) \cdot \dot{x}$$
 
-Instead of calculating ẋ directly, it is approximated using a proportional controller:
+where $J^+$ is the **pseudo-inverse** of the Jacobian.
 
-$$ẋ ≈ Kp · (x_d - x_c)$$
+Instead of calculating $\dot{x}$ directly, it is approximated using a proportional controller:
+
+$$\dot{x} \approx K_p \cdot (x_d - x_c)$$
+
+where:
+- $x_d$: desired end-effector position  
+- $x_c$: current end-effector position  
+- $K_p$: proportional gain
+
 
 
 🧪 Dependencies
