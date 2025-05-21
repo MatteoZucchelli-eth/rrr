@@ -19,11 +19,9 @@ class MasterNode(Node):
         self.L = self.get_parameter('link_length_l').get_parameter_value().double_value
         self.f = self.get_parameter('frequency_f').get_parameter_value().double_value
         
-        self.get_logger().info(f"Master node using L: {self.L}, f: {self.f}")
-
         self.publisher_ = self.create_publisher(JointState, '/desired_pose', 10)
         self.task_space_names = ['x_target', 'y_target'] 
-        self.timer_period = 0.02  # seconds
+        self.timer_period = 0.02  # f = 50 Hz
         self.timer = self.create_timer(self.timer_period, self.timer_callback)
 
         self.path_publisher_ = self.create_publisher(Path, '/end_effector_path', 10)

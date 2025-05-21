@@ -13,9 +13,10 @@ class MyNode(Node):
         self.get_logger().info(f"Controller using L: {self.L}")
 
         self.get_logger().info('Controller has been started.')
+        self.max_vel = 5.0
         self.num_joints = 3
         self.pos_dim = 2
-        self.timer_period = 0.001
+        self.timer_period = 0.001 # f = 1000 Hz
         self.current_theta = np.zeros(self.num_joints) 
         self.current_end_effector_position = np.zeros(self.pos_dim) 
         self.joint_names_ordered = ['joint1', 'joint2', 'joint3'] 
@@ -25,7 +26,7 @@ class MyNode(Node):
                 "Please update 'self.joint_names_ordered' in controller.py with the correct joint names from your URDF."
             )
         self.x_dot_desired = np.zeros(self.pos_dim) 
-        self.kp = 5
+        self.kp = 5.0
         self.publisher_ = self.create_publisher(JointState, 'joint_states', 10)
         self.desired_pose_subscription = self.create_subscription(
             JointState,
@@ -106,6 +107,9 @@ class MyNode(Node):
             self.get_logger().error(f"An unexpected error occurred during kinematic calculations: {e}")
             return
         
+        if np.any(np.abs(theta_dot) > self.max_vel):
+            theta_dot = np.clip(theta_dot, -self.max_vel, self.max_vel)
+            self.get_logger().warn(f"Clipping theta_dot to max velocity: {theta_dot}")
         new_theta_command_raw = theta_current + theta_dot * self.timer_period
 
         new_theta_command_normalized = np.arctan2(np.sin(new_theta_command_raw), np.cos(new_theta_command_raw))
