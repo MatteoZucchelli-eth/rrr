@@ -27,7 +27,7 @@ class MyNode(Node):
             )
         self.x_dot_desired = np.zeros(self.pos_dim) 
         self.kp = 5.0
-        self.publisher_ = self.create_publisher(JointState, 'joint_states', 10)
+        self.publisher_ = self.create_publisher(JointState, '/joint_states_vel', 10)
         self.desired_pose_subscription = self.create_subscription(
             JointState,
             '/desired_pose',
@@ -110,14 +110,11 @@ class MyNode(Node):
         if np.any(np.abs(theta_dot) > self.max_vel):
             theta_dot = np.clip(theta_dot, -self.max_vel, self.max_vel)
             self.get_logger().warn(f"Clipping theta_dot to max velocity: {theta_dot}")
-        new_theta_command_raw = theta_current + theta_dot * self.timer_period
 
-        new_theta_command_normalized = np.arctan2(np.sin(new_theta_command_raw), np.cos(new_theta_command_raw))
-    
         output_msg = JointState()
         output_msg.header.stamp = self.get_clock().now().to_msg()
         output_msg.name = self.joint_names_ordered
-        output_msg.position = new_theta_command_normalized.tolist()
+        output_msg.velocity = theta_dot.tolist()
         
         self.publisher_.publish(output_msg)
 

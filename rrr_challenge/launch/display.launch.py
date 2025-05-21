@@ -69,6 +69,14 @@ def generate_launch_description():
             {'frequency_f': 0.5}     # Set f for the master node
         ]
     )
+
+    # Add the visualization node
+    visualization_node = Node(
+        package='rrr_challenge',
+        executable='visualization_node.py', # Ensure this matches your script name
+        name='visualization_node',
+        output='screen'
+    )
     
     return LaunchDescription([
         robot_state_publisher,
@@ -76,5 +84,6 @@ def generate_launch_description():
         rviz2,
         controller_node,
         end_effector_listener_node,
-        master_node
+        master_node,
+        visualization_node
     ])
