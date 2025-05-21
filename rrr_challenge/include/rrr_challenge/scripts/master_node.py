@@ -4,7 +4,6 @@ from rclpy.node import Node
 from sensor_msgs.msg import JointState
 from geometry_msgs.msg import TransformStamped, PoseStamped, Quaternion
 import numpy as np
-from rclpy.time import Time # Import Time
 from nav_msgs.msg import Path
 
 class MasterNode(Node):
@@ -36,7 +35,7 @@ class MasterNode(Node):
         t = self.get_clock().now()
 
         x = 2 * self.L 
-        y = self.L * np.sin(t.nanoseconds / 1e9 * 2 * np.pi * self.f) # Corrected t.nanosec to t.nanoseconds
+        y = self.L * np.sin(t.nanoseconds / 1e9 * 2 * np.pi * self.f)
         target_position = np.array([x, y]) 
 
         msg.name = self.task_space_names 

@@ -13,7 +13,7 @@ class MyNode(Node):
         self.get_logger().info(f"Controller using L: {self.L}")
 
         self.get_logger().info('Controller has been started.')
-        self.max_vel = 5.0
+        self.max_vel = 2.0
         self.num_joints = 3
         self.pos_dim = 2
         self.timer_period = 0.001 # f = 1000 Hz
@@ -26,6 +26,7 @@ class MyNode(Node):
                 "Please update 'self.joint_names_ordered' in controller.py with the correct joint names from your URDF."
             )
         self.x_dot_desired = np.zeros(self.pos_dim) 
+        self.lambda_damping = 0.001
         self.kp = 5.0
         self.publisher_ = self.create_publisher(JointState, '/joint_states_vel', 10)
         self.desired_pose_subscription = self.create_subscription(
@@ -93,7 +94,9 @@ class MyNode(Node):
                 self.get_logger().error(f"Jacobian rows ({J.shape[0]}) do not match x_dot_desired dimension ({len(self.x_dot_desired)})")
                 return
 
-            J_inv = np.linalg.pinv(J)
+            I = np.eye(J.shape[0]) 
+            
+            J_inv = J.T @ np.linalg.inv(J @ J.T + self.lambda_damping**2 * I)
             
             if J_inv.shape[1] != len(self.x_dot_desired): 
                  self.get_logger().error(f"Pinv(J) columns ({J_inv.shape[1]}) do not match x_dot_desired dimension ({len(self.x_dot_desired)}) for multiplication.")

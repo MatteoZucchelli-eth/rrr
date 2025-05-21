@@ -10,7 +10,11 @@ class VisualizationNode(Node):
     def __init__(self):
         super().__init__('VisualizationNode')
         self.dt_visualization = 0.0005 # f = 2000 Hz 
-        self.theta_current = np.zeros(3)
+        first_theta = np.random.uniform(-np.pi, np.pi)           
+        second_theta = np.random.uniform(-np.pi/4, np.pi/4)      
+        third_theta = np.random.uniform(-np.pi/3, np.pi/3)  
+        self.theta_min = np.array([0.0, np.pi/8, np.pi/8]) 
+        self.theta_current = np.array([first_theta, second_theta, third_theta])
         self.theta_dot = np.zeros(3)
         self.joint_names_ordered = ['joint1', 'joint2', 'joint3']
 
@@ -27,7 +31,12 @@ class VisualizationNode(Node):
     def timer_callback(self):
         new_theta_command_raw = self.theta_current + self.theta_dot * self.dt_visualization
         self.theta_current = np.arctan2(np.sin(new_theta_command_raw), np.cos(new_theta_command_raw))
-    
+        
+        if abs(self.theta_current[1]) < self.theta_min[1]:
+            self.theta_current[1] = self.theta_min[1]
+        if abs(self.theta_current[2]) < self.theta_min[2]:
+            self.theta_current[2] = self.theta_min[2]
+
         output_msg = JointState()
         output_msg.header.stamp = self.get_clock().now().to_msg()
         output_msg.name = self.joint_names_ordered
