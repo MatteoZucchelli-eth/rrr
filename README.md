@@ -18,7 +18,7 @@ To get the code up and running:
 
 Launch the system with:
 
-   ```bash
+   ```py
    ros2 launch rrr_challenge display.launch.py
 
 ## 🤖 Robot Modeling
