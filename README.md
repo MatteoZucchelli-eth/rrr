@@ -13,7 +13,7 @@ To get the code up and running:
    
    ```bash
    
-   source venv/bin/activate
+   source rrr/venv/bin/activate
    
    ```
    
@@ -34,6 +34,47 @@ To get the code up and running:
 
    ```
 
+## ✏️ Task
+You will design and implement an end-effector control system for a planar 3-DOF RRR robot to
+follow a moving green target. The goal is to demonstrate your ability to implement a motion
+control strategy.
+
+### Technical Context
+● Target Motion (Theoretical Reference) (not available at runtime):
+  ○ X(t) = 2L
+  ○ Y(t) = L · sin(2πft) with f = 5 Hz
+● Target Position Data: Provided at 30 Hz to the robot controller
+● Robot Control Loop: Runs at 1 kHz
+
+### Task A
+Task A: Basic 2D Cartesian Tracking
+Implement controller for the RRR robot’s end effector to track the green target using only the
+target position data (at 30 Hz).
+
+### My solution
+https://github.com/user-attachments/assets/9a639036-5139-44ea-b5c3-5dc7dcade0f5
+### Task B
+Change target position frequency to 5Hz and control loop frequency to 50 Hz.
+Explain what do you observe?
+
+### My solution
+[https://github.com/user-attachments/assets/03719852-d7a6-4d08-bd16-dc84bb37d74d](https://github.com/user-attachments/assets/020e8caa-23c2-4b93-8883-e690f3beda24)
+
+As the frequency of the sinusoid determining how Y is moving and the publishing rate are the same, the master node will publish always the same target position for the end effector. This problem is commonly known as aliasing and occurs when the sampling rate is too low with respect to the function we want to sample. 
+
+To avoid aliasing, the sampling (or publishing) rate must be at least twice the highest frequency component of the signal, according to the Nyquist-Shannon sampling theorem. In this case, increasing the publishing rate above 10 Hz would allow the robot controller to receive a more accurate and varying representation of the sinusoidal motion.
+
+### (optional) Obstacle Avoidance + Joint limit constraints
+Extend your solution to avoid a fixed circular obstacle:
+● Position: X = L, Y = 0.5L
+● Diameter: L / 4
+Your controller should prevent the end effector from entering the obstacle's area.
+
+Additionally, add and enforce the following constraints in your control algorithm:
+● Joint angle position limits
+
+### My solution
+[[https://github.com/user-attachments/assets/eb7eb6dd-8a61-4754-9e2e-12fa812d0460](https://github.com/user-attachments/assets/9d83fcc7-04a7-4422-b6f6-50f94392cb4a)](https://github.com/user-attachments/assets/8cc789ac-dda6-49fe-9c2e-0bce8fc63d51)
 ## 🤖 Robot Modeling
 To model the robot:
 
@@ -113,4 +154,16 @@ where:
 - $x_c$: current end-effector position  
 - $\dot{x}_c$: current end-effector velocity  
 - $K_p$: proportional gain  
-- $K_d$: derivative gain  
+- $K_d$: derivative gain
+
+### Constrained Solution:
+
+To see the constrained solution, change branch to `constrained_solution`:
+
+   ```
+   git checkout constrained_solution
+   ```
+
+To successfully solve the constrained problem, I used a Sequential Quadratic Programming (SQP) solver that respects joint limits and avoids entering the red circular area while tracking.
+
+The video shows that the system is able to follow an oscillating trajectory that highlights how the robot reacts, running on a controller operating at f = 50 Hz.
