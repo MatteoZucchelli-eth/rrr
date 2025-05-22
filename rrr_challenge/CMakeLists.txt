@@ -17,9 +17,6 @@ include_directories(
 
 
 
-# Install
-install(TARGETS rrr_robot
-  DESTINATION lib/${PROJECT_NAME})
 
 # Install model files to include directory (for C++ header inclusion)
 install(DIRECTORY include/
