@@ -13,7 +13,7 @@ To get the code up and running:
    
    ```bash
    
-  source venv/bin/activate
+   source venv/bin/activate
    
    ```
    
