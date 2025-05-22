@@ -21,6 +21,7 @@ class MasterNode(Node):
         self.task_space_names = ['x_target', 'y_target'] 
         self.timer_period = 1 / self.f  # f = 50 Hz
         self.timer = self.create_timer(self.timer_period, self.timer_callback)
+        self.frequency_sin = 5.0 # Frequency of the sine wave
 
         # self.path_publisher_ = self.create_publisher(Path, '/end_effector_path', 10)
         # self.path_msg = Path()
@@ -42,13 +43,14 @@ class MasterNode(Node):
         t = self.get_clock().now()
 
         x = 2 * self.L 
-        y = self.L * np.sin(t.nanoseconds / 1e9 * 2 * np.pi * self.f)
+        y = self.L * np.sin(t.nanoseconds / 1e9 * 2 * np.pi * self.frequency_sin)
         target_position = np.array([x, y]) 
 
         msg.name = self.task_space_names 
         msg.position = target_position.tolist()
         
         self.publisher_.publish(msg)
+        
         # current_pose = PoseStamped()
         # current_pose.header.stamp = msg.header.stamp
         # current_pose.header.frame_id = "base_joint_link"
@@ -72,7 +74,6 @@ class MasterNode(Node):
 
         # self.path_publisher_.publish(self.path_msg)
 
-     
         # Create marker for visualizing the end effector position
         marker = Marker()
         marker.header.frame_id = "base_joint_link"
