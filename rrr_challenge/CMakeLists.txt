@@ -9,6 +9,7 @@ endif()
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(ament_index_cpp REQUIRED)
+find_package(sensor_msgs REQUIRED)
 
 # Find MuJoCo
 find_library(MUJOCO_LIBRARY mujoco REQUIRED)
@@ -55,6 +56,7 @@ install(PROGRAMS
   include/rrr_challenge/scripts/end_effector_listener.py
   include/rrr_challenge/scripts/master_node.py
   include/rrr_challenge/scripts/visualization_node.py
+  include/rrr_challenge/scripts/end_effector_plotter.py
   DESTINATION lib/${PROJECT_NAME}
 )
 

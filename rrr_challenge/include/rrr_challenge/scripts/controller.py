@@ -18,8 +18,8 @@ class MyNode(Node):
         self.pos_dim = 2
         self.f = 1000.0 # f = 1000 Hz
         self.timer_period = 1 / self.f
-        self.lambda_damping = 0.001
-        self.kp = 16.0
+        self.lambda_damping = 0.0001
+        self.kp = 16
     
         self.joint_names_ordered = ['joint1', 'joint2', 'joint3'] 
         self.current_theta = np.zeros(self.num_joints) 
@@ -97,37 +97,24 @@ class MyNode(Node):
         theta_current = self.get_theta() 
         x_dot_desired = self.get_x_dot_desired()
 
-        if theta_current.size == 0:
-            self.get_logger().warn("Current theta is empty, skipping control loop iteration.")
-            return
-
         J = self.evaluate_jacobian_method(theta_current)
 
 
         try:
-            if J.shape[0] != len(x_dot_desired):
-                self.get_logger().error(f"Jacobian rows ({J.shape[0]}) do not match x_dot_desired dimension ({len(x_dot_desired)})")
-                return
 
             I = np.eye(J.shape[0]) 
             
             J_inv = J.T @ np.linalg.inv(J @ J.T + self.lambda_damping**2 * I)
             
-            if J_inv.shape[1] != len(x_dot_desired): 
-                 self.get_logger().error(f"Pinv(J) columns ({J_inv.shape[1]}) do not match x_dot_desired dimension ({len(x_dot_desired)}) for multiplication.")
-                 return
 
             theta_dot = J_inv @ x_dot_desired
         except np.linalg.LinAlgError as e:
             self.get_logger().error(f"Failed to compute pseudo-inverse or matrix multiplication: {e}")
             return
-        except Exception as e:
-            self.get_logger().error(f"An unexpected error occurred during kinematic calculations: {e}")
-            return
         
         if np.any(np.abs(theta_dot) > self.max_vel):
             theta_dot = np.clip(theta_dot, -self.max_vel, self.max_vel)
-            self.get_logger().warn(f"Clipping theta_dot to max velocity: {theta_dot}")
+            # self.get_logger().warn(f"Clipping theta_dot to max velocity: {theta_dot}")
 
         output_msg = JointState()
         output_msg.header.stamp = self.get_clock().now().to_msg()

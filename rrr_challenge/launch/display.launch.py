@@ -77,6 +77,14 @@ def generate_launch_description():
         name='visualization_node',
         output='screen'
     )
+
+    # # Add the end_effector_plotter node
+    # end_effector_plotter_node = Node(
+    #     package='rrr_challenge',
+    #     executable='end_effector_plotter.py', # Ensure this matches your script name
+    #     name='end_effector_plotter_node',
+    #     output='screen'
+    # )
     
     return LaunchDescription([
         robot_state_publisher,
@@ -85,5 +93,6 @@ def generate_launch_description():
         controller_node,
         end_effector_listener_node,
         master_node,
-        visualization_node
+        visualization_node,
+        #end_effector_plotter_node
     ])
