@@ -161,4 +161,4 @@ To see the constrained solution, change branch to `constrained_solution`:
 
 To successfully solve the constrained problem, I used a Sequential Quadratic Programming (SQP) solver that respects joint limits and avoids entering the red circular area while tracking.
 
-The video shows that the system is able to follow a sinusoidal trajectory with frequency f = 1 Hz, running on a controller operating at f = 50 Hz.
+The video shows that the system is able to follow an oscillating trajectory that highlights how the robot reacts, running on a controller operating at f = 50 Hz.
