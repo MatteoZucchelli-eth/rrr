@@ -14,7 +14,7 @@ class VisualizationNode(Node):
         second_theta = np.random.uniform(-np.pi/4, np.pi/4)      
         third_theta = np.random.uniform(-np.pi/3, np.pi/3)  
         self.theta_min = np.array([0.0, np.pi/8, np.pi/8]) 
-        self.theta_current = np.array([0.0, second_theta, third_theta])
+        self.theta_current = np.array([0.0, 0.0, 0.0])
         self.theta_dot = np.zeros(3)
         self.joint_names_ordered = ['joint1', 'joint2', 'joint3']
 
