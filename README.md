@@ -123,6 +123,6 @@ To see the constrained solution, change branch to `constrained_solution`:
    git checkout constrained_solution
    ```
 
-To successfully solve the constrained problem, I used a Sequential Quadratic Programming (SQP) solver that respects joint limits and ensures smooth tracking of the desired trajectory.
+To successfully solve the constrained problem, I used a Sequential Quadratic Programming (SQP) solver that respects joint limits and avoids entering the red circular area while tracking.
 
 The system is able to follow a sinusoidal trajectory with frequency f = 1 Hz, running on a controller operating at f = 100 Hz.
