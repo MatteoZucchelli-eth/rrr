@@ -45,14 +45,13 @@ To model the robot:
 The system consists of four ROS 2 nodes, all written in Python:
 
 ### 1. **Master Node**
-- **Publishes**:
-   - `/desired_pose`
+- **Publishes**: `/desired_pose`
 - **Description**: Periodically generates and publishes a target position that the robot's end-effector must follow.
 
 ---
 
 ### 2. **End-Effector Node**
-- **Publishes**: `/end_effector_states`
+- **Publishes**: `/end_effector_pose`
 - **Description**: Computes the current Cartesian coordinates of the end-effector from the joint states visualized in RViz and publishes a clean, ready-to-use version.
 
 ---
@@ -70,8 +69,9 @@ The system consists of four ROS 2 nodes, all written in Python:
 The updated joint states are published and visualized in RViz.
 ### 4. **Controller Node**
 - **Subscribes**:
-  - `/desired_position`
-  - `/current_position`
+  - `/desired_pose`
+  - `/end_effector_pose`
+  - `/joint_states`
 - **Publishes**:  `/joint_states_vel`
 - **Description**: Controls the robot by computing the joint velocities required to make the end-effector follow the target trajectory.
 
@@ -93,7 +93,14 @@ To compute the required joint velocities:
 
 $$\dot{\theta} = J^+(\theta) \cdot \dot{x}$$
 
-where $J^+$ is the **pseudo-inverse** of the Jacobian.
+where $J^+$ is the **damped pseudo-inverse** of the Jacobian.
+
+   ```python
+
+   J_inv = J.T @ np.linalg.inv(J @ J.T + self.lambda_damping**2 * I)
+
+   ```
+
 
 Instead of calculating $\dot{x}$ directly, it is approximated using a proportional controller:
 
