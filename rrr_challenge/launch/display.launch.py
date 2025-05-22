@@ -66,7 +66,7 @@ def generate_launch_description():
         output='screen',
         parameters=[
             {'link_length_l': 1.0},  # Set L for the master node
-            {'frequency_f': 30.0}     # Set f for the master node
+            {'frequency_f': 5.0}     # Set f for the master node
         ]
     )
 

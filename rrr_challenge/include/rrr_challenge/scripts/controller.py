@@ -16,11 +16,11 @@ class MyNode(Node):
         self.max_vel = 100.0
         self.num_joints = 3
         self.pos_dim = 2
-        self.f = 1000.0 # f = 1000 Hz
+        self.f = 50.0 # f = 50 Hz
         self.timer_period = 1 / self.f
         self.lambda_damping = 0.01
-        self.kp = 47.5
-        self.kd = 0.95
+        self.kp = 10.0
+        self.kd = 0.0
 
         self.end_effector_initialized = False
         self.joint_states_initialized = False
