@@ -3,6 +3,7 @@ import rclpy
 from rclpy.node import Node
 from sensor_msgs.msg import JointState
 import numpy as np
+import threading
 
 class MyNode(Node):
     def __init__(self):
@@ -10,24 +11,25 @@ class MyNode(Node):
 
         self.declare_parameter('link_length_l', 1.0) 
         self.L = self.get_parameter('link_length_l').get_parameter_value().double_value
-        self.get_logger().info(f"Controller using L: {self.L}")
+        self.get_logger().info(f"Controller has been started. Using L: {self.L}")
 
-        self.get_logger().info('Controller has been started.')
         self.max_vel = 2.0
         self.num_joints = 3
         self.pos_dim = 2
-        self.timer_period = 0.001 # f = 1000 Hz
-        self.current_theta = np.zeros(self.num_joints) 
-        self.current_end_effector_position = np.zeros(self.pos_dim) 
-        self.joint_names_ordered = ['joint1', 'joint2', 'joint3'] 
-        if len(self.joint_names_ordered) != self.num_joints:
-            self.get_logger().error(
-                f"Mismatch between number of joints ({self.num_joints}) and defined joint names ({len(self.joint_names_ordered)}). "
-                "Please update 'self.joint_names_ordered' in controller.py with the correct joint names from your URDF."
-            )
-        self.x_dot_desired = np.zeros(self.pos_dim) 
+        self.f = 1000.0 # f = 1000 Hz
+        self.timer_period = 1 / self.f
         self.lambda_damping = 0.001
         self.kp = 5.0
+    
+        self.joint_names_ordered = ['joint1', 'joint2', 'joint3'] 
+        self.current_theta = np.zeros(self.num_joints) 
+        self.x_dot_desired = np.zeros(self.pos_dim) 
+        self.current_end_effector_position = np.zeros(self.pos_dim) 
+
+        self.theta_lock = threading.Lock()
+        self.x_dot_lock = threading.Lock()
+        self.end_effector_lock = threading.Lock()
+
         self.publisher_ = self.create_publisher(JointState, '/joint_states_vel', 10)
         self.desired_pose_subscription = self.create_subscription(
             JointState,
@@ -49,6 +51,18 @@ class MyNode(Node):
         self.timer = self.create_timer(self.timer_period, self.controller_loop_callback)
         self.get_logger().info('Controller node initialized with subscriber and timer.')
 
+    def get_theta(self):
+        with self.theta_lock:
+            return self.current_theta.copy()
+    
+    def get_x_dot_desired(self):
+        with self.x_dot_lock:
+            return self.x_dot_desired.copy()
+        
+    def get_end_effector_pose(self):
+        with self.end_effector_lock:
+            return self.current_end_effector_position.copy()
+
     def evaluate_jacobian_method(self, theta_input):
         J11 = -self.L * np.sin(theta_input[0]) - self.L * np.sin(theta_input[0] + theta_input[1]) - self.L * np.sin(theta_input[0] + theta_input[1] + theta_input[2])
         J12 = -self.L * np.sin(theta_input[0] + theta_input[1]) - self.L * np.sin(theta_input[0] + theta_input[1] + theta_input[2])
@@ -60,25 +74,29 @@ class MyNode(Node):
         return jacobian
 
     def desired_pose_callback(self, msg: JointState):
-        self.x_dot_desired = self.kp * (np.array(msg.position) - self.current_end_effector_position)
+        with self.x_dot_lock:
+            current_end_effector_position = self.get_end_effector_pose()
+            self.x_dot_desired = self.kp * (np.array(msg.position) - current_end_effector_position)
 
     def joint_states_listener_callback(self, msg: JointState):
         if msg.position and len(msg.position) == self.num_joints:
-            self.current_theta = np.array(msg.position)
-            self.get_logger().debug(f"Updated current_theta: {self.current_theta}")
+            with self.theta_lock:
+                self.current_theta = np.array(msg.position)
         else:
             self.get_logger().warn(f"Received joint state with unexpected length: {len(msg.position) if msg.position else 0}")
 
     def end_effector_states_callback(self, msg: JointState):
         if msg.position and len(msg.position) == self.pos_dim:
-            self.current_end_effector_position = np.array(msg.position)
-            self.get_logger().debug(f"Updated end effector position: {self.current_end_effector_position}")
+            with self.end_effector_lock:
+                self.current_end_effector_position = np.array(msg.position)
         else:
             self.get_logger().warn(f"Received end effector state with unexpected length: {len(msg.position) if msg.position else 0}")
             
     def controller_loop_callback(self):
-        theta_current = self.current_theta 
-        
+
+        theta_current = self.get_theta() 
+        x_dot_desired = self.get_x_dot_desired()
+
         if theta_current.size == 0:
             self.get_logger().warn("Current theta is empty, skipping control loop iteration.")
             return
@@ -90,19 +108,19 @@ class MyNode(Node):
             return
         
         try:
-            if J.shape[0] != len(self.x_dot_desired):
-                self.get_logger().error(f"Jacobian rows ({J.shape[0]}) do not match x_dot_desired dimension ({len(self.x_dot_desired)})")
+            if J.shape[0] != len(x_dot_desired):
+                self.get_logger().error(f"Jacobian rows ({J.shape[0]}) do not match x_dot_desired dimension ({len(x_dot_desired)})")
                 return
 
             I = np.eye(J.shape[0]) 
             
             J_inv = J.T @ np.linalg.inv(J @ J.T + self.lambda_damping**2 * I)
             
-            if J_inv.shape[1] != len(self.x_dot_desired): 
-                 self.get_logger().error(f"Pinv(J) columns ({J_inv.shape[1]}) do not match x_dot_desired dimension ({len(self.x_dot_desired)}) for multiplication.")
+            if J_inv.shape[1] != len(x_dot_desired): 
+                 self.get_logger().error(f"Pinv(J) columns ({J_inv.shape[1]}) do not match x_dot_desired dimension ({len(x_dot_desired)}) for multiplication.")
                  return
 
-            theta_dot = J_inv @ self.x_dot_desired
+            theta_dot = J_inv @ x_dot_desired
         except np.linalg.LinAlgError as e:
             self.get_logger().error(f"Failed to compute pseudo-inverse or matrix multiplication: {e}")
             return
