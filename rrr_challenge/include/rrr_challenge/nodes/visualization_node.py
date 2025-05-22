@@ -6,7 +6,10 @@ import numpy as np
 
 
 class VisualizationNode(Node):
-
+    """
+    A ROS2 node that simulates the visualization of a robotic arm's joint states.
+    It publishes the joint states at a high frequency and subscribes to joint velocity commands.
+    """
     def __init__(self):
         super().__init__('VisualizationNode')
         self.dt_visualization = 0.0005 # f = 2000 Hz 

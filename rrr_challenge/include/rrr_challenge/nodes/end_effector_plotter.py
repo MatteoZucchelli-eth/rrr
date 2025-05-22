@@ -6,6 +6,10 @@ import matplotlib.pyplot as plt
 import time
 
 class EndEffectorPlotter(Node):
+    """
+    A ROS2 node that subscribes to the end effector pose and plots the y position over time. 
+    This node can be used to tune the controller parameters by visualizing the end effector's y position.
+    """
 
     def __init__(self):
         super().__init__('end_effector_plotter')

@@ -8,6 +8,12 @@ from sensor_msgs.msg import JointState
 
 
 class EndEffectorListener(Node):
+    """
+    A ROS2 node that listens to the end effector pose and publishes it as a JointState message.
+    This node uses the tf2 library to transform the end effector pose from the 'base_joint_link' frame
+    to the 'end_effector_tip' frame.
+    It publishes the end effector pose at a high frequency (2000 Hz) for visualization purposes.
+    """
 
     def __init__(self):
         super().__init__('end_effector_listener')

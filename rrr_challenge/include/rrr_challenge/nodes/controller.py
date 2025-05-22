@@ -5,7 +5,12 @@ from sensor_msgs.msg import JointState
 import numpy as np
 import threading
 
-class MyNode(Node):
+class ControllerNode(Node):
+    """
+    A ROS2 node that implements a controller for a robotic arm.
+    It subscribes to joint states and desired poses, computes the Jacobian,
+    and publishes joint velocities to achieve the desired pose.
+    """
     def __init__(self):
         super().__init__('Controller')
 
@@ -162,7 +167,7 @@ class MyNode(Node):
 
 def main(args=None):
     rclpy.init(args=args)
-    controller_node = MyNode()
+    controller_node = ControllerNode()
     try:
         rclpy.spin(controller_node)
     except KeyboardInterrupt:
