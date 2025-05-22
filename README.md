@@ -58,7 +58,7 @@ Change target position frequency to 5Hz and control loop frequency to 50 Hz.
 Explain what do you observe?
 
 ### My solution
-
+https://github.com/user-attachments/assets/03719852-d7a6-4d08-bd16-dc84bb37d74d
 ### (optional) Obstacle Avoidance + Joint limit constraints
 Extend your solution to avoid a fixed circular obstacle:
 ● Position: X = L, Y = 0.5L
