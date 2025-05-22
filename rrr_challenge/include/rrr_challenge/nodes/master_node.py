@@ -12,7 +12,7 @@ class MasterNode(Node):
         super().__init__('master_node')
 
         self.declare_parameter('link_length_l', 1.0)
-        self.declare_parameter('frequency_f', 30.0)  # Frequency in Hz
+        self.declare_parameter('frequency_f', 50.0)  # Frequency in Hz
 
         self.L = self.get_parameter('link_length_l').get_parameter_value().double_value
         self.f = self.get_parameter('frequency_f').get_parameter_value().double_value
@@ -21,7 +21,7 @@ class MasterNode(Node):
         self.task_space_names = ['x_target', 'y_target'] 
         self.timer_period = 1 / self.f  # f = 30 Hz
         self.timer = self.create_timer(self.timer_period, self.timer_callback)
-        self.frequency_sin = 5.0 # Frequency of the sine wave
+        self.frequency_sin = 0.2 # Frequency of the sine wave
 
         self.path_publisher_ = self.create_publisher(Path, '/end_effector_path', 10)
         self.path_msg = Path()
@@ -42,7 +42,7 @@ class MasterNode(Node):
         
         t = self.get_clock().now()
 
-        x = 2 * self.L 
+        x = 1 * self.L 
         y = self.L * np.sin(t.nanoseconds / 1e9 * 2 * np.pi * self.frequency_sin)
         target_position = np.array([x, y]) 
 
