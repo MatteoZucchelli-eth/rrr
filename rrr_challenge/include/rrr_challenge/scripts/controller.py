@@ -13,13 +13,13 @@ class MyNode(Node):
         self.L = self.get_parameter('link_length_l').get_parameter_value().double_value
         self.get_logger().info(f"Controller has been started. Using L: {self.L}")
 
-        self.max_vel =50.0
+        self.max_vel = 25.0
         self.num_joints = 3
         self.pos_dim = 2
         self.f = 1000.0 # f = 1000 Hz
         self.timer_period = 1 / self.f
         self.lambda_damping = 0.001
-        self.kp = 15.0
+        self.kp = 16.0
     
         self.joint_names_ordered = ['joint1', 'joint2', 'joint3'] 
         self.current_theta = np.zeros(self.num_joints) 

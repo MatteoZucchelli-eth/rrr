@@ -12,14 +12,14 @@ class MasterNode(Node):
         super().__init__('master_node')
 
         self.declare_parameter('link_length_l', 1.0)
-        self.declare_parameter('frequency_f', 0.5)
+        self.declare_parameter('frequency_f', 30.0)  # Frequency in Hz
 
         self.L = self.get_parameter('link_length_l').get_parameter_value().double_value
         self.f = self.get_parameter('frequency_f').get_parameter_value().double_value
         
         self.publisher_ = self.create_publisher(JointState, '/desired_pose', 10)
         self.task_space_names = ['x_target', 'y_target'] 
-        self.timer_period = 1 / self.f  # f = 50 Hz
+        self.timer_period = 1 / self.f  # f = 30 Hz
         self.timer = self.create_timer(self.timer_period, self.timer_callback)
         self.frequency_sin = 5.0 # Frequency of the sine wave
 
@@ -50,7 +50,7 @@ class MasterNode(Node):
         msg.position = target_position.tolist()
         
         self.publisher_.publish(msg)
-        
+
         current_pose = PoseStamped()
         current_pose.header.stamp = msg.header.stamp
         current_pose.header.frame_id = "base_joint_link"
