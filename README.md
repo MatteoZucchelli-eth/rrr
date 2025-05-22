@@ -34,7 +34,7 @@ To get the code up and running:
 
    ```
 
-## Task
+## ✏️ Task
 You will design and implement an end-effector control system for a planar 3-DOF RRR robot to
 follow a moving green target. The goal is to demonstrate your ability to implement a motion
 control strategy.
@@ -52,7 +52,7 @@ Implement controller for the RRR robot’s end effector to track the green targe
 target position data (at 30 Hz).
 
 ### My solution
-
+https://github.com/user-attachments/assets/9a639036-5139-44ea-b5c3-5dc7dcade0f5
 ### Task B
 Change target position frequency to 5Hz and control loop frequency to 50 Hz.
 Explain what do you observe?
