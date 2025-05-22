@@ -102,14 +102,18 @@ where $J^+$ is the **damped pseudo-inverse** of the Jacobian.
    ```
 
 
-Instead of calculating $\dot{x}$ directly, it is approximated using a proportional controller:
+Instead of calculating the desired end-effector velocity $\dot{x}$ analytically, it is approximated using a **Proportional-Derivative (PD) controller**:
 
-$$\dot{x} \approx K_p \cdot (x_d - x_c)$$
+$$
+\dot{x} \approx K_p \cdot (x_d - x_c) + K_d \cdot (-\dot{x}_c)
+$$
 
 where:
 - $x_d$: desired end-effector position  
 - $x_c$: current end-effector position  
-- $K_p$: proportional gain
+- $\dot{x}_c$: current end-effector velocity  
+- $K_p$: proportional gain  
+- $K_d$: derivative gain  
 
 
 pip install catkin_pkg
