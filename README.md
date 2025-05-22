@@ -120,9 +120,7 @@ where:
 To see the constrained solution, change branch to `constrained_solution`:
 
    ```
-   
    git checkout constrained_solution
-   
    ```
 
 To successfully solve the constrained problem, I used a Sequential Quadratic Programming (SQP) solver that respects joint limits and ensures smooth tracking of the desired trajectory.
