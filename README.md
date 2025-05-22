@@ -69,7 +69,7 @@ Additionally, add and enforce the following constraints in your control algorith
 ● Joint angle position limits
 
 ### My solution
-[https://github.com/user-attachments/assets/eb7eb6dd-8a61-4754-9e2e-12fa812d0460](https://github.com/user-attachments/assets/9d83fcc7-04a7-4422-b6f6-50f94392cb4a)
+[[https://github.com/user-attachments/assets/eb7eb6dd-8a61-4754-9e2e-12fa812d0460](https://github.com/user-attachments/assets/9d83fcc7-04a7-4422-b6f6-50f94392cb4a)](https://github.com/user-attachments/assets/8cc789ac-dda6-49fe-9c2e-0bce8fc63d51)
 ## 🤖 Robot Modeling
 To model the robot:
 
