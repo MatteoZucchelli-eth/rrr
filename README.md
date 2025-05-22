@@ -34,6 +34,42 @@ To get the code up and running:
 
    ```
 
+## Task
+You will design and implement an end-effector control system for a planar 3-DOF RRR robot to
+follow a moving green target. The goal is to demonstrate your ability to implement a motion
+control strategy.
+
+### Technical Context
+● Target Motion (Theoretical Reference) (not available at runtime):
+  ○ X(t) = 2L
+  ○ Y(t) = L · sin(2πft) with f = 5 Hz
+● Target Position Data: Provided at 30 Hz to the robot controller
+● Robot Control Loop: Runs at 1 kHz
+
+### Task A
+Task A: Basic 2D Cartesian Tracking
+Implement controller for the RRR robot’s end effector to track the green target using only the
+target position data (at 30 Hz).
+
+### My solution
+
+### Task B
+Change target position frequency to 5Hz and control loop frequency to 50 Hz.
+Explain what do you observe?
+
+### My solution
+
+### (optional) Obstacle Avoidance + Joint limit constraints
+Extend your solution to avoid a fixed circular obstacle:
+● Position: X = L, Y = 0.5L
+● Diameter: L / 4
+Your controller should prevent the end effector from entering the obstacle's area.
+
+Additionally, add and enforce the following constraints in your control algorithm:
+● Joint angle position limits
+
+### My solution
+
 ## 🤖 Robot Modeling
 To model the robot:
 
