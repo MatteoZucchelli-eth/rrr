@@ -20,7 +20,7 @@ class MyNode(Node):
         self.timer_period = 1 / self.f
         self.lambda_damping = 0.01
         self.kp = 47.5
-        self.kd = 0.995
+        self.kd = 0.95
 
         self.end_effector_initialized = False
         self.joint_states_initialized = False
