@@ -23,7 +23,7 @@ class ControllerNode(Node):
         self.max_vel = 5.0
         self.num_joints = 3
         self.pos_dim = 2
-        self.f = 15.0 # f = 1000 Hz
+        self.f = 50.0 # f = 1000 Hz
         self.timer_period = 1 / self.f
         self.lambda_damping = 0.01
         self.kp = 6.0
@@ -171,14 +171,6 @@ class ControllerNode(Node):
                 theta_dot = theta_dot_unconstrained
             else:
                 # At least one constraint would be violated, use optimization
-                violated_type = []
-                if distance_to_center < self.radius:
-                    violated_type.append("circle")
-                if joint_limits_violated:
-                    violated_type.append("joint limits")
-                    
-                self.get_logger().info(f"Using constrained optimization for: {', '.join(violated_type)}")
-                
                 def objective(theta_dot_var):
                     distance = J @ theta_dot_var - x_dot_desired
                     return distance[1]**2
