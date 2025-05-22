@@ -13,7 +13,7 @@ To get the code up and running:
    
    ```bash
    
-   source src/rrr/venv/bin/activate
+   source rrr/venv/bin/activate
    
    ```
    
