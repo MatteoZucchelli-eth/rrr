@@ -99,7 +99,7 @@ where:
 - $K_p$: proportional gain
 
 
-
+/home/matteozucchelli/rrr_ws/src/rrr/venv/bin/python3 -m pip install catkin_pkg
 🧪 Dependencies
 Python 3.x
 
