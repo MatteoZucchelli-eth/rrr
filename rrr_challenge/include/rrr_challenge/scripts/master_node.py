@@ -23,9 +23,9 @@ class MasterNode(Node):
         self.timer = self.create_timer(self.timer_period, self.timer_callback)
         self.frequency_sin = 5.0 # Frequency of the sine wave
 
-        # self.path_publisher_ = self.create_publisher(Path, '/end_effector_path', 10)
-        # self.path_msg = Path()
-        # self.path_max_poses = 10
+        self.path_publisher_ = self.create_publisher(Path, '/end_effector_path', 10)
+        self.path_msg = Path()
+        self.path_max_poses = 3
 
         self.marker_publisher_ = self.create_publisher(Marker, '/end_effector_marker', 10)
         
@@ -51,28 +51,28 @@ class MasterNode(Node):
         
         self.publisher_.publish(msg)
         
-        # current_pose = PoseStamped()
-        # current_pose.header.stamp = msg.header.stamp
-        # current_pose.header.frame_id = "base_joint_link"
-        # current_pose.pose.position.x = target_position[1]
-        # current_pose.pose.position.y = 0.1
-        # current_pose.pose.position.z = target_position[0]
-        # q = Quaternion()
-        # q.x = 0.0
-        # q.y = 0.0
-        # q.z = 0.0
-        # q.w = 1.0
-        # current_pose.pose.orientation = q
+        current_pose = PoseStamped()
+        current_pose.header.stamp = msg.header.stamp
+        current_pose.header.frame_id = "base_joint_link"
+        current_pose.pose.position.x = target_position[1]
+        current_pose.pose.position.y = 0.1
+        current_pose.pose.position.z = target_position[0]
+        q = Quaternion()
+        q.x = 0.0
+        q.y = 0.0
+        q.z = 0.0
+        q.w = 1.0
+        current_pose.pose.orientation = q
 
-        # self.path_msg.header.stamp = msg.header.stamp
-        # self.path_msg.header.frame_id = "base_joint_link"
-        # self.path_msg.poses.append(current_pose)
+        self.path_msg.header.stamp = msg.header.stamp
+        self.path_msg.header.frame_id = "base_joint_link"
+        self.path_msg.poses.append(current_pose)
 
-        # if len(self.path_msg.poses) > self.path_max_poses:
-        #     self.path_msg.poses.pop(0)
+        if len(self.path_msg.poses) > self.path_max_poses:
+            self.path_msg.poses.pop(0)
         
 
-        # self.path_publisher_.publish(self.path_msg)
+        self.path_publisher_.publish(self.path_msg)
 
         # Create marker for visualizing the end effector position
         marker = Marker()
