@@ -21,6 +21,7 @@ To get the code up and running:
 
    ```bash
    
+   cd ..
    colcon build --packages-select rrr_challenge
    source install/setup.bash
    
