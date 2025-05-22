@@ -13,7 +13,7 @@ class EndEffectorListener(Node):
         super().__init__('end_effector_listener')
         self.tf_buffer = Buffer()
         self.tf_listener = TransformListener(self.tf_buffer, self)
-        self.timer = self.create_timer(0.0005, self.timer_callback)
+        self.timer = self.create_timer(0.0005, self.timer_callback) # f = 2000 Hz for the visualization
         self.ee_publisher_ = self.create_publisher(JointState, '/end_effector_states', 10)
 
         self.get_logger().info('End Effector Listener has been started.')
@@ -35,7 +35,6 @@ class EndEffectorListener(Node):
             ee_state_msg.position = [trans.transform.translation.z, trans.transform.translation.x]
             self.ee_publisher_.publish(ee_state_msg)
 
-          
             
         except Exception as e:
             self.get_logger().warn(f"Could not transform or publish: {e}")
