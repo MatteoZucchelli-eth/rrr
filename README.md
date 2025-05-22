@@ -47,7 +47,6 @@ The system consists of four ROS 2 nodes, all written in Python:
 ### 1. **Master Node**
 - **Publishes**:
    - `/desired_pose`
-   - `/end_effector_path`
 - **Description**: Periodically generates and publishes a target position that the robot's end-effector must follow.
 
 ---
