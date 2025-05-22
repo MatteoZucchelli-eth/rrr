@@ -21,6 +21,7 @@ To get the code up and running:
 
    ```bash
    
+   cd ..
    colcon build --packages-select rrr_challenge
    source install/setup.bash
    
@@ -53,6 +54,13 @@ target position data (at 30 Hz).
 
 ### My solution
 https://github.com/user-attachments/assets/9a639036-5139-44ea-b5c3-5dc7dcade0f5
+
+   ```bash
+
+   git checkout main
+
+   ```
+
 ### Task B
 Change target position frequency to 5Hz and control loop frequency to 50 Hz.
 Explain what do you observe?
@@ -64,6 +72,12 @@ As the frequency of the sinusoid determining how Y is moving and the publishing 
 
 To avoid aliasing, the sampling (or publishing) rate must be at least twice the highest frequency component of the signal, according to the Nyquist-Shannon sampling theorem. In this case, increasing the publishing rate above 10 Hz would allow the robot controller to receive a more accurate and varying representation of the sinusoidal motion.
 
+   ```bash
+
+   git checkout slower_new
+
+   ```
+
 ### (optional) Obstacle Avoidance + Joint limit constraints
 Extend your solution to avoid a fixed circular obstacle:
 ● Position: X = L, Y = 0.5L
@@ -74,7 +88,13 @@ Additionally, add and enforce the following constraints in your control algorith
 ● Joint angle position limits
 
 ### My solution
-[[https://github.com/user-attachments/assets/eb7eb6dd-8a61-4754-9e2e-12fa812d0460](https://github.com/user-attachments/assets/9d83fcc7-04a7-4422-b6f6-50f94392cb4a)](https://github.com/user-attachments/assets/8cc789ac-dda6-49fe-9c2e-0bce8fc63d51)
+https://github.com/user-attachments/assets/9f9592c5-a9cd-445b-8a24-544332be079a
+   ```bash
+
+   git checkout new_constrained_case
+
+   ```
+
 ## 🤖 Robot Modeling
 To model the robot:
 
