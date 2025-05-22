@@ -3,6 +3,11 @@
 This repository contains a ROS 2-based simulation of a simple 3-DOF planar robotic arm. The main goal is to control the end-effector to track a moving target in real-time.
 
 ---
+## 🖥️ System Requirements:
+
+Operating System: Ubuntu 22.04 LTS
+
+Software: ROS 2 Humble installed
 
 ## 🛠️ Setup Instructions
 
