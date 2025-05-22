@@ -59,6 +59,11 @@ Explain what do you observe?
 
 ### My solution
 [https://github.com/user-attachments/assets/03719852-d7a6-4d08-bd16-dc84bb37d74d](https://github.com/user-attachments/assets/020e8caa-23c2-4b93-8883-e690f3beda24)
+
+As the frequency of the sinusoid determining how Y is moving and the publishing rate are the same, the master node will publish always the same target position for the end effector. This problem is commonly known as aliasing and occurs when the sampling rate is too low with respect to the function we want to sample. 
+
+To avoid aliasing, the sampling (or publishing) rate must be at least twice the highest frequency component of the signal, according to the Nyquist-Shannon sampling theorem. In this case, increasing the publishing rate above 10 Hz would allow the robot controller to receive a more accurate and varying representation of the sinusoidal motion.
+
 ### (optional) Obstacle Avoidance + Joint limit constraints
 Extend your solution to avoid a fixed circular obstacle:
 ● Position: X = L, Y = 0.5L
