@@ -9,8 +9,15 @@ This repository contains a ROS 2-based simulation of a simple 3-DOF planar robot
 To get the code up and running:
 
 1. Clone this repository into your ROS 2 workspace (e.g., `~/ros2_ws/src/`).
-2. Make sure you have all dependencies installed (Python, NumPy, ROS 2 Humble).
-3. Build the workspace:
+2. Activate the virtual environment
+   
+   ```bash
+   
+  source venv/bin/activate
+   
+   ```
+   
+4. Build the workspace:
 
    ```bash
    
@@ -19,7 +26,7 @@ To get the code up and running:
    
    ```
    
-4. Launch the system with:
+5. Launch the system with:
 
    ```bash
 
