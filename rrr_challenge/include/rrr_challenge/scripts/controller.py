@@ -13,7 +13,7 @@ class MyNode(Node):
         self.L = self.get_parameter('link_length_l').get_parameter_value().double_value
         self.get_logger().info(f"Controller has been started. Using L: {self.L}")
 
-        self.max_vel =20.0
+        self.max_vel =50.0
         self.num_joints = 3
         self.pos_dim = 2
         self.f = 1000.0 # f = 1000 Hz
