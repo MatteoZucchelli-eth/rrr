@@ -23,9 +23,9 @@ class ControllerNode(Node):
         self.pos_dim = 2
         self.f = 1000.0 # f = 1000 Hz
         self.timer_period = 1 / self.f
-        self.lambda_damping = 0.01
-        self.kp = 47.5
-        self.kd = 0.95
+        self.lambda_damping = 0.02
+        self.kp = 25.0
+        self.kd = 0.005
 
         self.end_effector_initialized = False
         self.joint_states_initialized = False

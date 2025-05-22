@@ -94,5 +94,5 @@ def generate_launch_description():
         end_effector_listener_node,
         master_node,
         visualization_node,
-        #end_effector_plotter_node
+        end_effector_plotter_node
     ])
