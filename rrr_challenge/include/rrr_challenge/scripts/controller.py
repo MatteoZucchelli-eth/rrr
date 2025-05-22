@@ -63,16 +63,6 @@ class MyNode(Node):
         with self.end_effector_lock:
             return self.current_end_effector_position.copy()
 
-    def evaluate_jacobian_method(self, theta_input):
-        J11 = -self.L * np.sin(theta_input[0]) - self.L * np.sin(theta_input[0] + theta_input[1]) - self.L * np.sin(theta_input[0] + theta_input[1] + theta_input[2])
-        J12 = -self.L * np.sin(theta_input[0] + theta_input[1]) - self.L * np.sin(theta_input[0] + theta_input[1] + theta_input[2])
-        J13 = -self.L * np.sin(theta_input[0] + theta_input[1] + theta_input[2])
-        J21 = self.L * np.cos(theta_input[0]) + self.L * np.cos(theta_input[0] + theta_input[1]) + self.L * np.cos(theta_input[0] + theta_input[1] + theta_input[2])
-        J22 = self.L * np.cos(theta_input[0] + theta_input[1]) + self.L * np.cos(theta_input[0] + theta_input[1] + theta_input[2])
-        J23 = self.L * np.cos(theta_input[0] + theta_input[1] + theta_input[2])
-        jacobian = np.array([[J11, J12, J13], [J21, J22, J23]])
-        return jacobian
-
     def desired_pose_callback(self, msg: JointState):
         with self.x_dot_lock:
             current_end_effector_position = self.get_end_effector_pose()
@@ -91,7 +81,17 @@ class MyNode(Node):
                 self.current_end_effector_position = np.array(msg.position)
         else:
             self.get_logger().warn(f"Received end effector state with unexpected length: {len(msg.position) if msg.position else 0}")
-            
+    
+    def evaluate_jacobian_method(self, theta_input):
+        J11 = -self.L * np.sin(theta_input[0]) - self.L * np.sin(theta_input[0] + theta_input[1]) - self.L * np.sin(theta_input[0] + theta_input[1] + theta_input[2])
+        J12 = -self.L * np.sin(theta_input[0] + theta_input[1]) - self.L * np.sin(theta_input[0] + theta_input[1] + theta_input[2])
+        J13 = -self.L * np.sin(theta_input[0] + theta_input[1] + theta_input[2])
+        J21 = self.L * np.cos(theta_input[0]) + self.L * np.cos(theta_input[0] + theta_input[1]) + self.L * np.cos(theta_input[0] + theta_input[1] + theta_input[2])
+        J22 = self.L * np.cos(theta_input[0] + theta_input[1]) + self.L * np.cos(theta_input[0] + theta_input[1] + theta_input[2])
+        J23 = self.L * np.cos(theta_input[0] + theta_input[1] + theta_input[2])
+        jacobian = np.array([[J11, J12, J13], [J21, J22, J23]])
+        return jacobian
+
     def controller_loop_callback(self):
 
         theta_current = self.get_theta() 
@@ -103,10 +103,7 @@ class MyNode(Node):
 
         J = self.evaluate_jacobian_method(theta_current)
 
-        if J.size == 0 or J.shape[0] == 0 or J.shape[1] == 0:
-            self.get_logger().error("Jacobian is empty or ill-defined, skipping control loop iteration.")
-            return
-        
+
         try:
             if J.shape[0] != len(x_dot_desired):
                 self.get_logger().error(f"Jacobian rows ({J.shape[0]}) do not match x_dot_desired dimension ({len(x_dot_desired)})")
