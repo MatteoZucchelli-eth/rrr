@@ -20,7 +20,7 @@ class ControllerNode(Node):
         self.declare_parameter('link_length_l', 1.0) 
         self.L = self.get_parameter('link_length_l').get_parameter_value().double_value
 
-        self.max_vel = 5.0
+        self.max_vel = 7.0
         self.num_joints = 3
         self.pos_dim = 2
         self.f = 50.0 # f = 1000 Hz
@@ -50,8 +50,8 @@ class ControllerNode(Node):
         self.radius = self.L / 4.0
         
         # Define joint limits (in radians)
-        self.joint_min_limits = np.array([-np.pi, -np.pi, -np.pi])  # Minimum angle for each joint
-        self.joint_max_limits = np.array([np.pi, np.pi, np.pi])    # Maximum angle for each joint
+        self.joint_min_limits = np.array([-np.pi, -np.pi/4, -np.pi/4])  # Minimum angle for each joint
+        self.joint_max_limits = np.array([2*np.pi, np.pi/4*3, np.pi/4*3])    # Maximum angle for each joint
         self.joint_limit_margin = 0.1  # Small margin to avoid getting exactly at the limits
 
         self.publisher_ = self.create_publisher(JointState, '/joint_states_vel', 10)
@@ -173,7 +173,7 @@ class ControllerNode(Node):
                 # At least one constraint would be violated, use optimization
                 def objective(theta_dot_var):
                     distance = J @ theta_dot_var - x_dot_desired
-                    return distance[1]**2
+                    return np.linalg.norm(distance)**2
                 
                 # Circle constraint
                 def circle_constraint(theta_dot_var):
