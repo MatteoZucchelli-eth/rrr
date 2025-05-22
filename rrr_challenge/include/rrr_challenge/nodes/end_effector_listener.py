@@ -14,7 +14,7 @@ class EndEffectorListener(Node):
         self.tf_buffer = Buffer()
         self.tf_listener = TransformListener(self.tf_buffer, self)
         self.timer = self.create_timer(0.0005, self.timer_callback) # f = 2000 Hz for the visualization
-        self.ee_publisher_ = self.create_publisher(JointState, '/end_effector_states', 10)
+        self.ee_publisher_ = self.create_publisher(JointState, '/end_effector_pose', 10)
 
         self.get_logger().info('End Effector Listener has been started.')
 

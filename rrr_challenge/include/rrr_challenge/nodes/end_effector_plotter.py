@@ -11,7 +11,7 @@ class EndEffectorPlotter(Node):
         super().__init__('end_effector_plotter')
         self.subscription = self.create_subscription(
             JointState,
-            '/end_effector_states',
+            '/end_effector_pose',
             self.listener_callback,
             10)
         self.subscription 

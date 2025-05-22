@@ -52,8 +52,8 @@ class MyNode(Node):
         
         self.end_effector_state_subscription = self.create_subscription(
             JointState,
-            '/end_effector_states',
-            self.end_effector_states_callback,
+            '/end_effector_pose',
+            self.end_effector_pose_callback,
             10)
         
         self.timer = self.create_timer(self.timer_period, self.controller_loop_callback)
@@ -97,7 +97,7 @@ class MyNode(Node):
         else:
             self.get_logger().warn(f"Received joint state with unexpected length: {len(msg.position) if msg.position else 0}")
 
-    def end_effector_states_callback(self, msg: JointState):
+    def end_effector_pose_callback(self, msg: JointState):
         if msg.position and len(msg.position) == self.pos_dim:
             with self.end_effector_lock:
                 self.current_end_effector_position = np.array(msg.position)

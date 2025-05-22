@@ -9,21 +9,13 @@ endif()
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(ament_index_cpp REQUIRED)
-find_package(sensor_msgs REQUIRED)
-
-# Find MuJoCo
-find_library(MUJOCO_LIBRARY mujoco REQUIRED)
 
 # Add include directories
 include_directories(
   include
-  ${MUJOCO_INCLUDE_DIRS}
 )
 
-# Create executable
-add_executable(rrr_robot src/main.cpp)
-target_link_libraries(rrr_robot ${MUJOCO_LIBRARY})
-ament_target_dependencies(rrr_robot rclcpp ament_index_cpp)
+
 
 # Install
 install(TARGETS rrr_robot
@@ -52,11 +44,11 @@ install(DIRECTORY
 
 # Install Python scripts
 install(PROGRAMS
-  include/rrr_challenge/scripts/controller.py
-  include/rrr_challenge/scripts/end_effector_listener.py
-  include/rrr_challenge/scripts/master_node.py
-  include/rrr_challenge/scripts/visualization_node.py
-  include/rrr_challenge/scripts/end_effector_plotter.py
+  include/rrr_challenge/nodes/controller.py
+  include/rrr_challenge/nodes/end_effector_listener.py
+  include/rrr_challenge/nodes/master_node.py
+  include/rrr_challenge/nodes/visualization_node.py
+  include/rrr_challenge/nodes/end_effector_plotter.py
   DESTINATION lib/${PROJECT_NAME}
 )
 
